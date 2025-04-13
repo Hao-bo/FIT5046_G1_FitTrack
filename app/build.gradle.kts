@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.fittrackapp"
+    namespace = "com.example.myapplication"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.fittrackapp"
+        applicationId = "com.example.myapplication"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
