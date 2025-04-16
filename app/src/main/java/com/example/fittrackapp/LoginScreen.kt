@@ -70,7 +70,7 @@ fun WelcomeScreen(){
                 color = androidx.compose.ui.graphics.Color.Black,
                 fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(64.dp))
-            TextField(label = { Text(text = "Email:")},
+            TextField(label = { Text(text = "Email: example@gmail.com")},
                 value = "",
                 onValueChange = {},
                 modifier = Modifier.width(280.dp),
@@ -84,7 +84,7 @@ fun WelcomeScreen(){
                 modifier = Modifier.width(280.dp),
                 shape = RoundedCornerShape(16.dp),
                 trailingIcon = {
-                    IconButton( onClick = {} ) {
+                    IconButton( onClick = { showPassword = !showPassword } ) {
                         Icon(
                             icon,
                             contentDescription = "Visibility icon"
@@ -113,6 +113,11 @@ fun WelcomeScreen(){
             Button(onClick = {},
                 modifier = Modifier.width(280.dp),) {
                 Text("Sign In / Sign Up with Google")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {},
+                modifier = Modifier.width(280.dp),) {
+                Text("Forget password")
             }
         }
 
