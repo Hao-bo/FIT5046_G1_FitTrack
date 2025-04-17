@@ -47,9 +47,13 @@ fun HomeScreen(){
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop)
                             Text(text = "Class 1",
-                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge)
+                            Button(onClick = { },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                                Text("Move with us!")
+                            }
                     }
                 }
                 Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
@@ -59,9 +63,13 @@ fun HomeScreen(){
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop)
                         Text(text = "Class 2",
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge)
+                        Button(onClick = { },
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                            Text("Move with us!")
+                        }
                     }
                 }
                 Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
@@ -71,9 +79,13 @@ fun HomeScreen(){
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop)
                         Text(text = "Class 3",
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge)
+                        Button(onClick = { },
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                            Text("Move with us!")
+                        }
                     }
                 }
                 Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
@@ -83,9 +95,13 @@ fun HomeScreen(){
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop)
                         Text(text = "Class 4",
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge)
+                        Button(onClick = { },
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                            Text("Move with us!")
+                        }
                     }
                 }
             }

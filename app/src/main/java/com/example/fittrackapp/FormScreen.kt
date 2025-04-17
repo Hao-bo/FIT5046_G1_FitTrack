@@ -46,7 +46,10 @@ fun FormScreen() {
     val workoutDataByDay = listOf(
         WorkoutData("08:00 AM", "Warm-up"),
         WorkoutData("10:00 AM", "Strength"),
-        WorkoutData("12:00 PM", "Cardio")
+        WorkoutData("12:00 PM", "Cardio"),
+        WorkoutData("02:00 PM", "Warm-up"),
+        WorkoutData("04:00 PM", "Strength"),
+        WorkoutData("06:00 PM", "Cardio")
     )
 
     val workoutDataByMonth = listOf(
@@ -55,9 +58,8 @@ fun FormScreen() {
         WorkoutData("03/01/2024", "Cardio")
     )
 
-    Surface(modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFDDFCB7)) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(64.dp)) {
             Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 val headerTitles = listOf("Time","Category")
                 DisplayDatePicker()

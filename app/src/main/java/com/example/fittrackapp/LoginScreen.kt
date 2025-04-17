@@ -46,9 +46,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @Composable
-fun WelcomeScreen(){
+fun WelcomeScreen(navController: NavController){
     val state = remember { TextFieldState() }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
@@ -58,7 +59,7 @@ fun WelcomeScreen(){
         Icons.Filled.VisibilityOff
     }
     Surface(modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFDDFCB7)) {
+        ) {
         Column(modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
@@ -99,7 +100,11 @@ fun WelcomeScreen(){
             )
             Spacer(modifier = Modifier.height(32.dp))
             Row {
-                Button(onClick = {},
+                Button(onClick = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
                     modifier = Modifier.width(130.dp),) {
                     Text("Sign in")
                 }
@@ -127,5 +132,5 @@ fun WelcomeScreen(){
 @Preview(showBackground = true)
 @Composable
 fun WelcomeScreenPreview(){
-    WelcomeScreen()
+
 }

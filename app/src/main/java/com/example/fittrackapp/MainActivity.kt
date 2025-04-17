@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.MaterialTheme
@@ -25,8 +26,12 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavDestination.Companion.hierarchy
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -51,7 +56,8 @@ class MainActivity : ComponentActivity(), PermissionsListener {
         enableEdgeToEdge()
         setContent {
             FitTrackAppTheme {
-                BottomNavigationBar()
+//                BottomNavigationBar()
+                BottomNavigationBarM3()
             }
         }
     }
@@ -79,62 +85,69 @@ class MainActivity : ComponentActivity(), PermissionsListener {
 
 data class NavRoute(val route: String,val icon: ImageVector,val label: String)
 
+
 @Composable
-fun BottomNavigationBar() {
-    // Define the list of navigation routes using the data class
+fun BottomNavigationBarM3() {
     val navRoutes = listOf(
         NavRoute("home", Icons.Default.Home, "Home"),
-        NavRoute("map",Icons.Default.Place,"Map"),
+        NavRoute("map", Icons.Default.Place, "Map"),
         NavRoute("form", Icons.Default.Info, "Form")
-
     )
 
     val navController = rememberNavController()
-    androidx.compose.material3.Scaffold(
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+
+    Scaffold(
         bottomBar = {
-            BottomNavigation(
-                modifier = Modifier.padding(bottom = 20.dp),
-                backgroundColor = Color(0xFFADD8E6)
-            ) //light blue color
-            {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                navRoutes.forEach { navRoute ->
-                    BottomNavigationItem(
-                        icon = {
-                            Icon(
-                                navRoute.icon, contentDescription =
-                                    navRoute.label
-                            )
-                        },
-                        label = { Text(navRoute.label) },
-                        selected = currentDestination?.route == navRoute.route,
-                        onClick = {
-                            navController.navigate(navRoute.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    inclusive = false
+            if (currentRoute != "login"){
+                NavigationBar(
+                    containerColor = Color(0xFFADD8E6)
+                ) {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+
+                    navRoutes.forEach { navRoute ->
+                        val isSelected = currentDestination?.hierarchy?.any { it.route == navRoute.route } == true
+
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                navController.navigate(navRoute.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
-                    )
+                            },
+                            icon = {
+                                Icon(
+                                    navRoute.icon,
+                                    contentDescription = navRoute.label
+                                )
+                            },
+                            label = { Text(navRoute.label) },
+                            alwaysShowLabel = false,
+                        )
+                    }
                 }
             }
         }
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = "login",
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable("home") {  }
-            composable("form") { FormScreen() }
-            composable("map") { MapScreen() }
+            composable("login") { WelcomeScreen(navController) }
+            composable("home") {  HomeScreen()  }
+            composable("form") {  FormScreen()  }
+            composable("map") { MapScreen()  }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
