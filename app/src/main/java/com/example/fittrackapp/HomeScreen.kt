@@ -1,6 +1,7 @@
 package com.example.fittrackapp
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,20 +29,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(){
     val cardTitles = listOf("class 1", "class 2", "class 3", "class 4")
-    var showDialog by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxSize().padding(8.dp)){
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 72.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            items(cardTitles.size) {
-                Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
-                    Box(modifier = Modifier.fillMaxSize()){
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+            Column {
+                Text(
+                    text = "Home",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "What's New",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text = "Start Workout",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            LazyColumn(modifier = Modifier.fillMaxSize().weight(1f).padding(bottom = 72.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                items(cardTitles.size) {
+                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                        Box(modifier = Modifier.fillMaxSize()){
                             Image(painter = painterResource(id = R.drawable.gym1),
                                 contentDescription = "Gym",
                                 modifier = Modifier.fillMaxSize(),
@@ -54,88 +81,57 @@ fun HomeScreen(){
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                                 Text("Move with us!")
                             }
+                        }
                     }
-                }
-                Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
-                    Box(modifier = Modifier.fillMaxSize()){
-                        Image(painter = painterResource(id = R.drawable.gym1),
-                            contentDescription = "Gym",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop)
-                        Text(text = "Class 2",
-                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge)
-                        Button(onClick = { },
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                            Text("Move with us!")
+                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                        Box(modifier = Modifier.fillMaxSize()){
+                            Image(painter = painterResource(id = R.drawable.gym1),
+                                contentDescription = "Gym",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop)
+                            Text(text = "Class 2",
+                                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleLarge)
+                            Button(onClick = { },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                                Text("Move with us!")
+                            }
+                        }
+                    }
+                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                        Box(modifier = Modifier.fillMaxSize()){
+                            Image(painter = painterResource(id = R.drawable.gym1),
+                                contentDescription = "Gym",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop)
+                            Text(text = "Class 3",
+                                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleLarge)
+                            Button(onClick = { },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                                Text("Move with us!")
+                            }
+                        }
+                    }
+                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                        Box(modifier = Modifier.fillMaxSize()){
+                            Image(painter = painterResource(id = R.drawable.gym1),
+                                contentDescription = "Gym",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop)
+                            Text(text = "Class 4",
+                                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleLarge)
+                            Button(onClick = { },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                                Text("Move with us!")
+                            }
                         }
                     }
                 }
-                Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
-                    Box(modifier = Modifier.fillMaxSize()){
-                        Image(painter = painterResource(id = R.drawable.gym1),
-                            contentDescription = "Gym",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop)
-                        Text(text = "Class 3",
-                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge)
-                        Button(onClick = { },
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                            Text("Move with us!")
-                        }
-                    }
-                }
-                Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
-                    Box(modifier = Modifier.fillMaxSize()){
-                        Image(painter = painterResource(id = R.drawable.gym1),
-                            contentDescription = "Gym",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop)
-                        Text(text = "Class 4",
-                            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge)
-                        Button(onClick = { },
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                            Text("Move with us!")
-                        }
-                    }
-                }
-            }
-        }
-        Button(onClick = { showDialog = true },
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)) {
-            Text(text = "Upload my workout data")
-        }
-        if (showDialog){
-            AlertDialog(onDismissRequest = { showDialog = false },
-                confirmButton = {
-                    Row(modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween) {
-                        Button(onClick = { showDialog = false }) {
-                            Text(text = "Cancel")
-                        }
-                        Button(onClick = { showDialog = false }) {
-                            Text(text = "Upload")
-                        }
-                    }
-                },
-                title = { Text(text = "Upload your workout data")},
-                text = {
-                    Column{
-                        OutlinedTextField(value = "",
-                            onValueChange = {},
-                            label = { Text(text = "Date")},
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp))
-                        OutlinedTextField(value = "",
-                            label = {Text(text = "Category")},
-                            onValueChange = {},
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp))
-                    }
-                })
         }
     }
 }

@@ -48,8 +48,6 @@ fun FormScreen() {
         WorkoutData("10:00 AM", "Strength"),
         WorkoutData("12:00 PM", "Cardio"),
         WorkoutData("02:00 PM", "Warm-up"),
-        WorkoutData("04:00 PM", "Strength"),
-        WorkoutData("06:00 PM", "Cardio")
     )
 
     val workoutDataByMonth = listOf(
