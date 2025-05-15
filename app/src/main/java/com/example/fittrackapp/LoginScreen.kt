@@ -65,6 +65,10 @@ fun WelcomeScreen(
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
 
+    // Form Validation
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
     val isSignInSuccessful by authViewModel.isSignInSuccessful.collectAsState()
@@ -79,6 +83,41 @@ fun WelcomeScreen(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    fun validateForm(): Boolean {
+        var isValid = true
+
+        // validate email
+        if (emailValue.trim().isEmpty()) {
+            emailError = "Email address cannot be null"
+            isValid = false
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailValue.trim()).matches()) {
+            emailError = "Please enter a valid email address"
+            isValid = false
+        } else {
+            emailError = null
+        }
+
+        // validate password
+        if (password.trim().isEmpty()) {
+            passwordError = "password can not be null"
+            isValid = false
+        } else if (password.length < 6) {
+            passwordError = "password digits at least 6"
+            isValid = false
+        } else {
+            passwordError = null
+        }
+
+        // validate fail
+        if (!isValid) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Please fill in all required fields correctly")
+            }
+        }
+
+        return isValid
+    }
 
     // Go to home page
     LaunchedEffect(isSignInSuccessful) {
@@ -125,14 +164,21 @@ fun WelcomeScreen(
                         value = emailValue,
                         onValueChange = {
                             emailValue = it
+                            emailError = null
                         },
                         modifier = Modifier.width(280.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        isError = emailError != null,
+                        supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
+
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     TextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            passwordError = null
+                        },
                         label = { Text("Password:") },
                         placeholder = { Text("Password") },
                         modifier = Modifier.width(280.dp),
@@ -149,24 +195,32 @@ fun WelcomeScreen(
                             VisualTransformation.None
                         } else {
                             PasswordVisualTransformation()
-                        }
+                        },
+                        isError = passwordError != null,
+                        supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
                     )
                     Spacer(modifier = Modifier.height(32.dp))
                     Row {
                         Button(
                             onClick = {
-                                authViewModel.signInWithEmailAndPassword(emailValue.trim(), password.trim())
+                                if (validateForm()) {
+                                    authViewModel.signInWithEmailAndPassword(emailValue.trim(), password.trim())
+                                }
                             },
                             modifier = Modifier.width(130.dp),
+                            enabled = !isLoading
                         ) {
                             Text("Sign in")
                         }
                         Spacer(modifier = Modifier.width(20.dp))
                         Button(
                             onClick = {
-                                authViewModel.signUpWithEmailAndPassword(emailValue.trim(), password.trim())
+                                if (validateForm()){
+                                    authViewModel.signUpWithEmailAndPassword(emailValue.trim(), password.trim())
+                                }
                             },
-                            modifier = Modifier.width(130.dp)
+                            modifier = Modifier.width(130.dp),
+                            enabled = !isLoading
                         ) {
                             Text("Sign up")
                         }
