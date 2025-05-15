@@ -2,9 +2,12 @@ package com.example.fittrackapp
 
 import android.app.Application
 import android.util.Log
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,7 +35,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _isSignInSuccessful = MutableStateFlow(false)
     val isSignInSuccessful: StateFlow<Boolean> = _isSignInSuccessful.asStateFlow()
 
-    private val auth: FirebaseAuth = Firebase.auth
+    internal val auth: FirebaseAuth = Firebase.auth
+    private val credentialManager: CredentialManager = CredentialManager.create(getApplication())
+
 
     // Define a tag to find and filter log output in Logcat
     companion object {
@@ -109,8 +114,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun signOut() {
         auth.signOut()
+        // When a user signs out, clear the current user credential state from all credential providers.
         viewModelScope.launch {
-            // Can add CredentialManager.clearCredentialState if need
+            try {
+                val clearRequest = ClearCredentialStateRequest()
+                credentialManager.clearCredentialState(clearRequest)
+            } catch (e: ClearCredentialException) {
+                Log.e(TAG, "Couldn't clear user credentials: ${e.localizedMessage}")
+            }
             Log.d(TAG, "user has been signed out in Firebase")
             _isSignInSuccessful.value = false // reset state or navigate
             _isLoading.value = false
