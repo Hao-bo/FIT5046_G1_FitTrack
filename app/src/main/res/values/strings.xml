@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FitTrack App</string>
+    <string name="default_web_client_id" translatable="false">1067603187978-lv174mtgh48sb0d5egum1nkrof2mqv3p.apps.googleusercontent.com</string>
 </resources>
