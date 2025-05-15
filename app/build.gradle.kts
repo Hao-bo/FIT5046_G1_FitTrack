@@ -59,7 +59,7 @@ dependencies {
     implementation("com.mapbox.maps:android:11.11.0")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material)
-    implementation(platform("androidx.compose:compose-bom:2025.02.00"))
+    implementation(platform("androidx.compose:compose-bom:33.13.0"))
     implementation("androidx.compose.material3:material3")
     implementation ("androidx.compose.material:material-icons-extended")
     implementation(libs.beetablescompose)

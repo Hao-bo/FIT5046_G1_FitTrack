@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +46,8 @@ fun ProfileScreen(
     authViewModel: AuthViewModel = viewModel()) {
 
     val scope = rememberCoroutineScope()
-    val userName = authViewModel.auth.currentUser?.displayName
+    val userName by authViewModel.username.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +90,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.size(32.dp))
 
         Text(
-            userName.toString(),
+            text = userName ?: "User",
             fontWeight = FontWeight.Bold,
             fontSize = MaterialTheme.typography.headlineMedium.fontSize
         )

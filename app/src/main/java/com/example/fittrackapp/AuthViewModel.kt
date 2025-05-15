@@ -25,6 +25,10 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Co
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val _username = MutableStateFlow<String?>(null)
+    val username: StateFlow<String?> = _username.asStateFlow()
+
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -42,6 +46,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     // Define a tag to find and filter log output in Logcat
     companion object {
         private const val TAG = "AuthViewModel"
+    }
+
+    init {
+        // check current user and set username
+        auth.currentUser?.let { user ->
+            if (user.email != null) {
+                _username.value = user.email?.substringBefore("@")?.take(5)
+            } else {
+                _username.value = user.displayName
+            }
+        }
     }
 
     fun createGoogleSignInRequest(): GetCredentialRequest {
@@ -88,6 +103,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
+                    _username.value = auth.currentUser?.displayName
                     _isSignInSuccessful.value = true
                 } else {
                     // If sign in fails, display a message to the user
@@ -127,5 +143,44 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _isLoading.value = false
             _errorMessage.value = null
         }
+    }
+
+    // Regular sign in and sign up
+    fun signInWithEmailAndPassword(email: String, password: String) {
+        _isLoading.value = true
+        _errorMessage.value = null
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "signInWithEmail:success")
+                    _username.value = email.substringBefore("@").take(5)
+                    _isSignInSuccessful.value = true
+                } else {
+                    Log.w(TAG, "signInWithEmail:failure", task.exception)
+                    _errorMessage.value = "Authentication failed: ${task.exception?.message}"
+                }
+                _isLoading.value = false
+            }
+    }
+
+    fun signUpWithEmailAndPassword(email: String, password: String) {
+        _isLoading.value = true
+        _errorMessage.value = null
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "createUserWithEmail:success")
+                    _username.value = email.substringBefore("@").take(5)
+                    _isSignInSuccessful.value = true
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                    _errorMessage.value = "Registration failed: ${task.exception?.message}"
+                }
+                _isLoading.value = false
+            }
     }
 }
