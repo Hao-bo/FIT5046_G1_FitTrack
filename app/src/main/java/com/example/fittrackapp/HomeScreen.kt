@@ -1,5 +1,6 @@
 package com.example.fittrackapp
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun HomeScreen(){
     val cardTitles = listOf("class 1", "class 2", "class 3", "class 4")

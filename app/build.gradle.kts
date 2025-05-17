@@ -42,6 +42,18 @@ android {
 
 dependencies {
 
+
+    implementation("com.mapbox.navigationcore:android:3.8.6")  // Adds core Navigation SDK functionality
+
+    // Search by category
+
+//    implementation("com.mapbox.search:autofill:2.12.0-beta.1")
+    implementation("com.mapbox.search:discover:2.12.0")
+//    implementation("com.mapbox.search:place-autocomplete:2.12.0-beta.1")
+//    implementation("com.mapbox.search:offline:2.12.0-beta.1")
+    implementation("com.mapbox.search:mapbox-search-android:2.12.0")
+//    implementation("com.mapbox.search:mapbox-search-android-ui:2.12.0-beta.1")
+
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
 
