@@ -1,7 +1,6 @@
 package com.example.fittrackapp
 
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,8 +52,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -70,6 +69,15 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.DisposableEffect
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.navigation.ui.maps.NavigationStyles
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources
 
 
 @Composable
@@ -81,11 +89,67 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
     val isLoading by mapViewModel.isLoading.collectAsState()
     val errorMessage by mapViewModel.errorMessage.collectAsState()
 
+    // route on map
+    val navigationRoutes by mapViewModel.navigationRoutes.collectAsState()
+    val selectedGym by mapViewModel.selectedGym.collectAsState()
+    val isNavigating by mapViewModel.isNavigating.collectAsState()
+
+    // Initialization Navigation SDK
+    LaunchedEffect(Unit) {
+        // use Provider gst instance
+        val navigationInstance = MapboxNavigationProvider.retrieve()
+        if (navigationInstance != null) {
+            mapViewModel.setNavigationInitialized()
+        }
+    }
+
     // Map marker management related status
     var pointAnnotationManager: PointAnnotationManager? by remember { mutableStateOf(null) }
     val annotations = remember { mutableListOf<PointAnnotation>() }
     val customMarkerBitmap = remember(context) { createCustomMarkerBitmap(context) }
     var mapboxMapInstance: MapboxMap? by remember { mutableStateOf(null) }
+
+    // Draw route
+    val routeLineColorResources = remember { RouteLineColorResources.Builder().build() }
+    val routeLineViewOptions = remember {
+        MapboxRouteLineViewOptions.Builder(context)
+            .routeLineColorResources(routeLineColorResources)
+            .routeLineBelowLayerId("road-label-navigation")
+            .build()
+    }
+    val routeLineApiOptions = remember {
+        MapboxRouteLineApiOptions.Builder()
+            .vanishingRouteLineEnabled(true)
+            .build()
+    }
+    val routeLineApi = remember { MapboxRouteLineApi(routeLineApiOptions) }
+    val routeLineView = remember { MapboxRouteLineView(routeLineViewOptions) }
+
+
+    // clean resource when user go to other page
+    DisposableEffect(Unit) {
+        onDispose {
+            routeLineView.cancel()
+            routeLineApi.cancel()
+        }
+    }
+
+    // update route
+    LaunchedEffect(navigationRoutes) {
+        if (navigationRoutes.isNotEmpty()) {
+            routeLineApi.setNavigationRoutes(navigationRoutes) { value ->
+                mapboxMapInstance?.style?.apply {
+                    routeLineView.renderRouteDrawData(this, value)
+                }
+            }
+        } else {
+            routeLineApi.clearRouteLine { value ->
+                mapboxMapInstance?.style?.apply {
+                    routeLineView.renderClearRouteLineValue(this, value)
+                }
+            }
+        }
+    }
 
     // Handling location permissions
     var hasLocationPermission by remember {
@@ -147,8 +211,14 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
                 mapViewportState = mapViewportState
             ) {
                 MapEffect(Unit) { mapView ->
+                    // Initialize the map with navigation style
+                    mapView.mapboxMap.loadStyle(NavigationStyles.NAVIGATION_DAY_STYLE) {
+                        // Initialize the route line layers
+                        routeLineView.initializeLayers(it)
+                    }
+
                     // save map instance
-                    mapboxMapInstance = mapView.getMapboxMap()
+                    mapboxMapInstance = mapView.mapboxMap
 
                     mapView.location.updateSettings {
                         locationPuck = createDefault2DPuck(withBearing = true)
@@ -156,6 +226,7 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
                         puckBearing = PuckBearing.COURSE
                         puckBearingEnabled = true
                     }
+
                     // Initialize the mark manager
                     val annotationApi = mapView.annotations
                     pointAnnotationManager = annotationApi.createPointAnnotationManager()
@@ -164,62 +235,128 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
                 }
 
                 // Update the markers on the map when results change
-                LaunchedEffect(gymResults, pointAnnotationManager) {
-                    pointAnnotationManager?.let { manager ->
-                        // clear old marker
-                        manager.deleteAll()
-                        annotations.clear()
+                LaunchedEffect(gymResults, pointAnnotationManager, isNavigating) {
+                    if (!isNavigating) {
+                        pointAnnotationManager?.let { manager ->
+                            // clear old marker
+                            manager.deleteAll()
+                            annotations.clear()
 
-                        // add new marker
-                        gymResults.forEach { result ->
-                            val pointAnnotationOptions = PointAnnotationOptions()
-                                .withPoint(result.coordinate)
-                                .withIconImage(customMarkerBitmap)
-                                .withIconAnchor(IconAnchor.BOTTOM)
+                            // add new marker
+                            gymResults.forEach { result ->
+                                val pointAnnotationOptions = PointAnnotationOptions()
+                                    .withPoint(result.coordinate)
+                                    .withIconImage(customMarkerBitmap)
+                                    .withIconAnchor(IconAnchor.BOTTOM)
 
-                            manager.create(pointAnnotationOptions)?.let { annotation ->
-                                annotations.add(annotation)
+                                manager.create(pointAnnotationOptions)?.let { annotation ->
+                                    annotations.add(annotation)
+                                }
+                            }
+                            // Adjust the camera to fit all markers
+                            // Need to adjust later
+                            if (gymResults.isNotEmpty() && mapboxMapInstance != null) {
+                                val points = gymResults.map { it.coordinate }
+                                val edgeInsets = EdgeInsets(100.0, 100.0, 300.0, 100.0)
+
+                                mapboxMapInstance?.cameraForCoordinates(
+                                    points,
+                                    CameraOptions.Builder().build(),
+                                    edgeInsets,
+                                    null,
+                                    null
+                                ) {
+                                    mapViewportState.flyTo(it)
+                                }
                             }
                         }
-                        // Adjust the camera to fit all markers
-                        // Need to adjust later
-                        if (gymResults.isNotEmpty() && mapboxMapInstance != null) {
-                            val points = gymResults.map { it.coordinate }
-                            val edgeInsets = EdgeInsets(100.0, 100.0, 300.0, 100.0)
+                    }
+                }
 
-                            mapboxMapInstance?.cameraForCoordinates(
-                                points,
-                                CameraOptions.Builder().build(),
-                                edgeInsets,
-                                null,
-                                null
-                            ) {
-                                mapViewportState.flyTo(it)
-                            }
+                // Update camera when navigating to a gym
+                LaunchedEffect(selectedGym, isNavigating) {
+                    if (isNavigating && selectedGym != null && userLocation != null) {
+                        val points = listOf(userLocation!!, selectedGym!!.coordinate)
+                        val edgeInsets = EdgeInsets(100.0, 100.0, 300.0, 100.0)
+
+                        mapboxMapInstance?.cameraForCoordinates(
+                            points,
+                            CameraOptions.Builder().build(),
+                            edgeInsets,
+                            null,
+                            null
+                        ) {
+                            mapViewportState.flyTo(it)
                         }
                     }
                 }
             }
 
-            // Search Button on map top right
-            Button(
-                onClick = {
-                    if (hasLocationPermission) {
-                        mapViewModel.searchNearbyGyms(userLocation)
-                    } else {
-                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                        Toast.makeText(context, "Please grant location permission first", Toast.LENGTH_SHORT).show()
+            // Navigation Mode UI
+            if (isNavigating) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .align(Alignment.TopStart)
+                ) {
+                    Button(
+                        onClick = {
+                            mapViewModel.clearNavigation()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Exit navigation",
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Exit navigation")
                     }
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(50)
-            ) {
-                Icon(Icons.Default.Search, contentDescription = "Search gym nearby", tint = Color.White)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Search gym nearby")
+
+                    selectedGym?.let { gym ->
+                        Text(
+                            text = "Navigating to: ${gym.name}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .background(Color(0xCC000000), RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                        )
+                    }
+                }
+            } else {
+                // Search Button on map top right
+                Button(
+                    onClick = {
+                        if (hasLocationPermission) {
+                            mapViewModel.searchNearbyGyms(userLocation)
+                        } else {
+                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            Toast.makeText(
+                                context,
+                                "Please grant location permission first",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search gym nearby",
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Search gym nearby")
+                }
             }
 
             // display loading state
@@ -235,69 +372,64 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
             }
         }
 
-        // display gym card profile
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(16.dp)
+        if (!isNavigating) {
+            // display gym card profile
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
 //                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // show results number
-            if (gymResults.isNotEmpty()) {
-                Text(
-                    text = "${gymResults.size} gyms found nearby ",
+                // show results number
+                if (gymResults.isNotEmpty()) {
+                    Text(
+                        text = "${gymResults.size} gyms found nearby ",
 //                    text = "debug: ${gymResults.toString()}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
 
-            // show gym cards if there are results
-            if (gymResults.isNotEmpty()) {
-                LazyColumn(modifier = Modifier.fillMaxHeight()) {
-                    items(gymResults) { result ->
+                // show gym cards if there are results
+                if (gymResults.isNotEmpty()) {
+                    LazyColumn(modifier = Modifier.fillMaxHeight()) {
+                        items(gymResults) { result ->
+                            GymCard(
+                                name = result.name,
+                                address = result.address.formattedAddress ?: "No address available",
+                                hours = "No hours info",
+                                distance = "N/A", // results have no distance need to calculate
+                                description = result.categories.joinToString(", "),
+                                onNavigateClick = {
+                                    mapViewModel.navigateToGym(result)
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    // show the sample card if there are no results
+                    if (!isLoading) {
+                        Text(
+                            text = "Search for gyms to see results here",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+
+                        // Sample Gym Card
                         GymCard(
-                            name = result.name,
-                            address = result.address.formattedAddress ?: "No address available",
-                            hours = "No hours info",
-                            distance = "N/A", // results have no distance need to calculate
-                            description = result.categories.joinToString(", ")
+                            name = "Training Day Gym Clayton",
+                            address = "123 Fitness Avenue, Clayton, VIC 3168",
+                            hours = "5:00 AM - 11:00 PM",
+                            distance = "600m",
+                            description = "This modern gym features top-tier equipment, personal training sessions, " +
+                                    "group classes, and a spacious cardio area. Perfect for both beginners and fitness enthusiasts!",
+                            onNavigateClick = {}
                         )
                     }
-                }
-            } else {
-                // show the sample card if there are no results
-                if (!isLoading) {
-                    Text(
-                        text = "Search for gyms to see results here",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    // Sample Gym Card
-                    GymCard(
-                        name = "Training Day Gym Clayton",
-                        address = "123 Fitness Avenue, Clayton, VIC 3168",
-                        hours = "5:00 AM - 11:00 PM",
-                        distance = "600m",
-                        description = "This modern gym features top-tier equipment, personal training sessions, " +
-                                "group classes, and a spacious cardio area. Perfect for both beginners and fitness enthusiasts!"
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    GymCard(
-                        name = "Iron Temple Fitness Center",
-                        address = "78 Workout Road, Mulgrave, VIC 3170",
-                        hours = "24/7 Access",
-                        distance = "1.2km",
-                        description = "Iron Temple offers a hardcore training environment for serious lifters. Includes a full weight room, " +
-                                "powerlifting platforms, recovery zone, and nutrition bar."
-                    )
                 }
             }
         }
@@ -310,37 +442,18 @@ fun createCustomMarkerBitmap(context: Context): Bitmap {
     return BitmapFactory.decodeResource(context.resources, drawableId)
 }
 
-//// 格式化地址
-//fun DiscoverAddress.formattedAddress(): String? {
-//    val parts = listOfNotNull(
-//        houseNumber,
-//        street,
-//        neighborhood,
-//        locality,
-//        place,
-//        district,
-//        region,
-//        country
-//    ).filter { it.isNotEmpty() }
-//
-//    return if (parts.isNotEmpty()) parts.joinToString(", ") else null
-//}
-
-//// 格式化距离
-//fun formatDistance(distanceMeters: Double): String {
-//    return when {
-//        distanceMeters < 1000 -> "${distanceMeters.toInt()}m"
-//        else -> "${(distanceMeters / 1000).toInt()}km"
-//    }
-//}
-
-
-
-//    @Preview
-//    @Composable
-//    fun MapScreenPreview() {
-//        MapScreen()
-//    }
+@Preview(showBackground = true)
+@Composable
+fun MapScreenPreview() {
+    GymCard(
+        name = "Training Day Gym Clayton",
+        address = "123 Fitness Avenue, Clayton, VIC 3168",
+        hours = "5:00 AM - 11:00 PM",
+        distance = "600m",
+        description = "",
+        onNavigateClick = {}
+    )
+}
 
 @Composable
 fun GymCard(
@@ -348,37 +461,48 @@ fun GymCard(
     address: String,
     hours: String,
     distance: String,
-    description: String
+    description: String,
+    onNavigateClick: () -> Unit
 ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = "📍 $address", style = MaterialTheme.typography.bodyMedium)
-                Text(text = "🕒 Open: $hours", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    text = "🚶‍♂️ $distance from your location",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            Text(text = "📍 $address", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "🕒 Open: $hours", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "🚶‍♂️ $distance from your location",
+                style = MaterialTheme.typography.bodyMedium
+            )
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "💪 $description",
-                    style = MaterialTheme.typography.bodySmall,
-                    lineHeight = 20.sp
-                )
+            Text(
+                text = "💪 $description",
+                style = MaterialTheme.typography.bodySmall,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(),
+                onClick = onNavigateClick
+            ) {
+                Text("Navigate To")
             }
         }
+    }
 }

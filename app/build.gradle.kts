@@ -42,6 +42,9 @@ android {
 
 dependencies {
 
+
+    implementation("com.mapbox.navigationcore:android:3.8.6")  // Adds core Navigation SDK functionality
+
     // Search by category
 
 //    implementation("com.mapbox.search:autofill:2.12.0-beta.1")
