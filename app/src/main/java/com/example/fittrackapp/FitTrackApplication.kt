@@ -1,8 +1,8 @@
 package com.example.fittrackapp
 
 import android.app.Application
-import android.util.Log
 import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.MapboxNavigationProvider
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 

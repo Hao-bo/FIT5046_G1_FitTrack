@@ -45,7 +45,10 @@ import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Insets
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -277,7 +280,7 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
                 LaunchedEffect(selectedGym, isNavigating) {
                     if (isNavigating && selectedGym != null && userLocation != null) {
                         val points = listOf(userLocation!!, selectedGym!!.coordinate)
-                        val edgeInsets = EdgeInsets(100.0, 100.0, 300.0, 100.0)
+                        val edgeInsets = EdgeInsets(200.0, 100.0, 500.0, 100.0)
 
                         mapboxMapInstance?.cameraForCoordinates(
                             points,
@@ -300,32 +303,41 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
                         .padding(16.dp)
                         .align(Alignment.TopStart)
                 ) {
-                    Button(
-                        onClick = {
-                            mapViewModel.clearNavigation()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        shape = RoundedCornerShape(50)
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Exit navigation",
-                            tint = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Exit navigation")
-                    }
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .align(Alignment.TopStart),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically) {
 
-                    selectedGym?.let { gym ->
-                        Text(
-                            text = "Navigating to: ${gym.name}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .background(Color(0xCC000000), RoundedCornerShape(8.dp))
-                                .padding(8.dp)
-                        )
+                        Button(
+                            onClick = {
+                                mapViewModel.clearNavigation()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                            shape = RoundedCornerShape(50)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Exit navigation",
+                                tint = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Exit navigation")
+                        }
+
+                        Spacer(modifier = Modifier.width(24.dp))
+
+                        selectedGym?.let { gym ->
+                            Text(
+                                text = "Navigating to: ${gym.name}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .background(Color(0xCC000000), RoundedCornerShape(8.dp))
+                                    .padding(8.dp)
+                            )
+                        }
                     }
                 }
             } else {

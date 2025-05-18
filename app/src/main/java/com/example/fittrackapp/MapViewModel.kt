@@ -65,7 +65,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // Track navigation initialization state
     private val _isNavigationInitialized = MutableStateFlow(false)
-    val isNavigationInitialized: StateFlow<Boolean> = _isNavigationInitialized.asStateFlow()
 
 
     init {
@@ -126,6 +125,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _isLoading.value = true
         _selectedGym.value = gymResult
 
+        // 检查是否完成初始化并且进行10次尝试
         if (!_isNavigationInitialized.value) {
             viewModelScope.launch {
                 var attempts = 0
@@ -162,6 +162,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             .applyLanguageAndVoiceUnitOptions(getApplication())
             .coordinatesList(listOf(userPoint, gymResult.coordinate))
             .alternatives(true)
+            .layersList(listOf(1,null))
             .build()
 
         // Request route
