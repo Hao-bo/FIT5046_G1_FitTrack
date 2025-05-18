@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.ksp)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -42,6 +43,11 @@ android {
 
 dependencies {
 
+    ksp(libs.androidx.room.compiler)
+
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
 
     implementation("com.mapbox.navigationcore:android:3.8.6")  // Adds core Navigation SDK functionality
 

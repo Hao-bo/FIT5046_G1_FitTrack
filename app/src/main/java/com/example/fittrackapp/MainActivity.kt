@@ -126,7 +126,7 @@ fun BottomNavigationBarM3() {
 
     Scaffold(
         topBar = {
-            if (currentRoute != "login" && currentRoute != "profile"){
+            if (currentRoute != "login" && currentRoute != "profile" && currentRoute != "add_workout"){
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,16 +157,16 @@ fun BottomNavigationBarM3() {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    if (currentRoute == "home"){
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Upload workout data",
-                            modifier = Modifier.size(24.dp)
-                                .clickable {
-                                    showDialog = true
-                                }
-                        )
-                    }
+//                    if (currentRoute == "home"){
+//                        Icon(
+//                            imageVector = Icons.Default.Add,
+//                            contentDescription = "Upload workout data",
+//                            modifier = Modifier.size(24.dp)
+//                                .clickable {
+//                                    showDialog = true
+//                                }
+//                        )
+//                    }
 
                 }
             }
@@ -213,10 +213,16 @@ fun BottomNavigationBarM3() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("login") { WelcomeScreen(navController) }
-            composable("home") {  HomeScreen()  }
+            composable("home") {  HomeScreen(navController)  }
             composable("form") {  FormScreen()  }
             composable("map") { MapScreen()  }
             composable("profile") { ProfileScreen(navController) }
+            composable("add_workout") { AddWorkoutScreen(
+                navController,
+                onSaveWorkout = { timestamp, duration, activityType, notes ->
+                    navController.popBackStack()
+                }
+            ) }
         }
     }
 

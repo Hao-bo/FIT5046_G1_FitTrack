@@ -33,10 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun HomeScreen(){
+fun HomeScreen(navController: NavController){
     val cardTitles = listOf("class 1", "class 2", "class 3", "class 4")
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
             Column {
@@ -59,9 +60,12 @@ fun HomeScreen(){
                     )
 
                     Text(
-                        text = "Start Workout",
+                        text = "Upload Workout",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable{
+                            navController.navigate("add_workout")
+                        }
                     )
                 }
             }
@@ -141,5 +145,5 @@ fun HomeScreen(){
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen()
+//    HomeScreen(navController = NavController)
 }
