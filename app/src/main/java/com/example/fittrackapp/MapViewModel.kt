@@ -125,24 +125,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _isLoading.value = true
         _selectedGym.value = gymResult
 
-        // 检查是否完成初始化并且进行10次尝试
-        if (!_isNavigationInitialized.value) {
-            viewModelScope.launch {
-                var attempts = 0
-                while (!_isNavigationInitialized.value && attempts < 10) {
-                    attempts++
-                }
-
-                if (_isNavigationInitialized.value) {
-                    requestRoute(userPoint, gymResult)
-                } else {
-                    _errorMessage.value = "Could not initialize navigation. Please try again."
-                    _isLoading.value = false
-                }
-            }
-            return
-        }
-
         requestRoute(userPoint, gymResult)
     }
 
