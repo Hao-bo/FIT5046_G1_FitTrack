@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = viewModel()) {
+    authViewModel: AuthViewModel = viewModel()
+) {
 
     val scope = rememberCoroutineScope()
     val userName by authViewModel.username.collectAsState()
@@ -132,5 +133,5 @@ fun ProfileScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileScreen() {
-    ProfileScreen(navController = rememberNavController())
+//    ProfileScreen(navController = rememberNavController())
 }

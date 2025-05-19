@@ -9,6 +9,8 @@ import androidx.room.PrimaryKey
 data class WorkoutSession(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(name = "user-id")
+    val userId: String,
     @ColumnInfo(name = "timestamp")
     val timestamp: Long, // workout time
     @ColumnInfo(name = "duration-minutes")

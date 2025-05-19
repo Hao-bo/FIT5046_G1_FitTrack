@@ -8,25 +8,24 @@ class WorkoutRepository(private val workoutDao: WorkoutDao) {
         workoutDao.addWorkout(workout)
     }
 
-    fun getAllWorkouts(): Flow<List<WorkoutSession>> {
-        return workoutDao.getAllWorkouts()
+    fun getAllWorkouts(userId: String): Flow<List<WorkoutSession>> {
+        return workoutDao.getAllWorkouts(userId)
     }
 
-    fun getWorkoutById(id: Int): Flow<WorkoutSession> {
-        return workoutDao.getWorkoutById(id)
+    fun getWorkoutById(id: Int, userId: String): Flow<WorkoutSession> {
+        return workoutDao.getWorkoutById(id, userId)
     }
 
-    fun getWorkoutsByMonth(monthStart: Long, monthEnd: Long): Flow<List<WorkoutSession>> {
-        return workoutDao.getWorkoutsByMonth(monthStart, monthEnd)
+    fun getWorkoutsByMonth(userId: String,monthStart: Long, monthEnd: Long): Flow<List<WorkoutSession>> {
+        return workoutDao.getWorkoutsByMonth(userId,monthStart, monthEnd)
     }
 
-    fun getWorkoutsByDate(dayStart: Long, dayEnd: Long): Flow<List<WorkoutSession>> {
-        return workoutDao.getWorkoutByDate(dayStart, dayEnd)
+    fun getWorkoutsByDate(userId: String,dayStart: Long, dayEnd: Long): Flow<List<WorkoutSession>> {
+        return workoutDao.getWorkoutByDate(userId,dayStart, dayEnd)
     }
 
     suspend fun updateWorkout(workout: WorkoutSession) {
         workoutDao.updateWorkout(workout)
-
     }
 
     suspend fun deleteWorkout(workout: WorkoutSession) {

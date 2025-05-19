@@ -15,8 +15,12 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class FormViewModel(
-    private val workoutRepository: WorkoutRepository = Graph.workoutRepository
+    private val workoutRepository: WorkoutRepository = Graph.workoutRepository,
+    private val authViewModel: AuthViewModel,
 ) : ViewModel() {
+
+    // Observe current user ID
+    private val currentUserId = authViewModel.currentUserId
 
     // the time by user selected
     private val _selectedDateMillis = MutableStateFlow<Long?>(null)
@@ -24,24 +28,38 @@ class FormViewModel(
 
 
     // when _selectedDateMillis update，automatically query the exercise data of the corresponding date
-    val workoutsForSelectedDate: StateFlow<List<WorkoutSession>> = _selectedDateMillis.flatMapLatest { millis ->
-        if (millis == null) {
-            flowOf(emptyList()) // return emptyList if doesn't select _selectedDateMillis
-        } else {
-            val (dayStart, dayEnd) = calculateDayTimestamps(millis)
-            workoutRepository.getWorkoutsByDate(dayStart, dayEnd)
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    val workoutsForSelectedDate: StateFlow<List<WorkoutSession>> =
+        currentUserId.flatMapLatest { userId ->
+            if (userId == null) {
+                flowOf(emptyList())
+            } else {
+                _selectedDateMillis.flatMapLatest { millis ->
+                    if (millis == null) {
+                        flowOf(emptyList()) // return emptyList if doesn't select _selectedDateMillis
+                    } else {
+                        val (dayStart, dayEnd) = calculateDayTimestamps(millis)
+                        workoutRepository.getWorkoutsByDate(userId, dayStart, dayEnd)
+                    }
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    val workoutsForSelectedMonth: StateFlow<List<WorkoutSession>> = _selectedYearMonth.flatMapLatest { yearMonthPair ->
-        if (yearMonthPair == null) {
-            flowOf(emptyList())
-        } else {
-            val (year, month) = yearMonthPair
-            val (monthStart, monthEnd) = calculateMonthTimestamps(year, month)
-            workoutRepository.getWorkoutsByMonth(monthStart, monthEnd)
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val workoutsForSelectedMonth: StateFlow<List<WorkoutSession>> =
+        currentUserId.flatMapLatest { userId ->
+            if (userId == null) {
+                flowOf(emptyList())
+            } else {
+                _selectedYearMonth.flatMapLatest { yearMonthPair ->
+                    if (yearMonthPair == null) {
+                        flowOf(emptyList())
+                    } else {
+                        val (year, month) = yearMonthPair
+                        val (monthStart, monthEnd) = calculateMonthTimestamps(year, month)
+                        workoutRepository.getWorkoutsByMonth(userId,monthStart, monthEnd)
+                    }
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
      * Updates the date selected by the user and triggers a data load.

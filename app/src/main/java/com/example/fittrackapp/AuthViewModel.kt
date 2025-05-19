@@ -25,6 +25,12 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Co
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
+    internal val auth: FirebaseAuth = Firebase.auth
+    private val credentialManager: CredentialManager = CredentialManager.create(getApplication())
+
+    private val _currentUserId = MutableStateFlow<String?>(auth.currentUser?.uid)
+    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
 
@@ -39,8 +45,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _isSignInSuccessful = MutableStateFlow(false)
     val isSignInSuccessful: StateFlow<Boolean> = _isSignInSuccessful.asStateFlow()
 
-    internal val auth: FirebaseAuth = Firebase.auth
-    private val credentialManager: CredentialManager = CredentialManager.create(getApplication())
 
 
     // Define a tag to find and filter log output in Logcat
@@ -57,6 +61,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 _username.value = user.displayName
             }
         }
+    }
+
+    private fun updateCurrentUserId() {
+        _currentUserId.value = auth.currentUser?.uid
     }
 
     fun createGoogleSignInRequest(): GetCredentialRequest {
@@ -105,6 +113,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "signInWithCredential:success")
                     _username.value = auth.currentUser?.displayName
                     _isSignInSuccessful.value = true
+                    updateCurrentUserId()
                 } else {
                     // If sign in fails, display a message to the user
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -139,6 +148,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e(TAG, "Couldn't clear user credentials: ${e.localizedMessage}")
             }
             Log.d(TAG, "user has been signed out in Firebase")
+            _currentUserId.value = null
+            _username.value = null
             _isSignInSuccessful.value = false // reset state or navigate
             _isLoading.value = false
             _errorMessage.value = null
@@ -156,6 +167,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "signInWithEmail:success")
                     _username.value = email.substringBefore("@").take(5)
                     _isSignInSuccessful.value = true
+                    updateCurrentUserId()
                 } else {
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
                     _errorMessage.value = "Authentication failed: ${task.exception?.message}"
@@ -175,6 +187,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "createUserWithEmail:success")
                     _username.value = email.substringBefore("@").take(5)
                     _isSignInSuccessful.value = true
+                    updateCurrentUserId()
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)

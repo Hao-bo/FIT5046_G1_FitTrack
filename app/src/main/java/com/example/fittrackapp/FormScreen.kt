@@ -67,7 +67,7 @@ fun formatTimestampToTimeString(timestamp: Long): String {
 
 @Composable
 fun FormScreen(
-    viewModel: FormViewModel = viewModel() // get FormViewModel instance
+    viewModel: FormViewModel = Graph.formViewModel // get FormViewModel instance
 ) {
     // Collecting Workout Data from the ViewModel
     val workoutsForDate by viewModel.workoutsForSelectedDate.collectAsState()

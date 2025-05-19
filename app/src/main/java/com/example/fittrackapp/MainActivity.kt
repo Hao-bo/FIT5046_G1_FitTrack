@@ -66,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity(), PermissionsListener {
+
     lateinit var permissionsManager: PermissionsManager
     override fun onCreate(savedInstanceState: Bundle?) {
 

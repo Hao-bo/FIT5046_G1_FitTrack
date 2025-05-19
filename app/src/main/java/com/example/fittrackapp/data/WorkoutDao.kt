@@ -15,25 +15,25 @@ abstract class WorkoutDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun addWorkout(workoutEntity: WorkoutSession)
 
-    @Query("Select * from WorkoutSession")
-    abstract fun getAllWorkouts(): Flow<List<WorkoutSession>>
+    @Query("Select * from WorkoutSession Where `user-id` = :userId Order by timestamp DESC")
+    abstract fun getAllWorkouts(userId: String): Flow<List<WorkoutSession>>
 
     @Update
-    abstract fun updateWorkout(workoutEntity: WorkoutSession)
+    abstract suspend fun updateWorkout(workoutEntity: WorkoutSession)
 
     @Delete
-    abstract fun deleteWorkout(workoutEntity: WorkoutSession)
+    abstract suspend fun deleteWorkout(workoutEntity: WorkoutSession)
 
-    @Query("Select * from WorkoutSession where id = :id")
-    abstract fun getWorkoutById(id: Int): Flow<WorkoutSession>
+    @Query("Select * from WorkoutSession where id = :id AND `user-id` = :userId")
+    abstract fun getWorkoutById(id: Int, userId: String): Flow<WorkoutSession>
 
     @Query("Select * from WorkoutSession where synced = 0")
     abstract fun getUnsyncedWorkouts(): Flow<List<WorkoutSession>>
 
-    @Query("SELECT * FROM WorkoutSession WHERE timestamp BETWEEN :monthStart AND :monthEnd ORDER BY timestamp ASC")
-    abstract fun getWorkoutsByMonth(monthStart: Long, monthEnd: Long): Flow<List<WorkoutSession>>
+    @Query("SELECT * FROM WorkoutSession WHERE `user-id` = :userId AND  timestamp BETWEEN :monthStart AND :monthEnd ORDER BY timestamp ASC")
+    abstract fun getWorkoutsByMonth(userId: String, monthStart: Long, monthEnd: Long): Flow<List<WorkoutSession>>
 
-    @Query("Select * from WorkoutSession where timestamp BETWEEN :dayStart AND :dayEnd ORDER BY timestamp ASC")
-    abstract fun getWorkoutByDate(dayStart: Long, dayEnd: Long): Flow<List<WorkoutSession>>
+    @Query("Select * from WorkoutSession where `user-id` = :userId AND timestamp BETWEEN :dayStart AND :dayEnd ORDER BY timestamp ASC")
+    abstract fun getWorkoutByDate(userId: String, dayStart: Long, dayEnd: Long): Flow<List<WorkoutSession>>
 
 }
