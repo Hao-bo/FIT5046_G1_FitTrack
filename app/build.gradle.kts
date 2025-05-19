@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 
 android {
@@ -73,6 +74,11 @@ dependencies {
 
     //  ViewModel for Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 
 
     implementation("com.mapbox.extension:maps-compose:11.11.0")
