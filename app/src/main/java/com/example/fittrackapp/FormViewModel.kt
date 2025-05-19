@@ -15,7 +15,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class FormViewModel(
-    private val workoutRepository: WorkoutRepository
+    private val workoutRepository: WorkoutRepository = Graph.workoutRepository
 ) : ViewModel() {
 
     // the time by user selected

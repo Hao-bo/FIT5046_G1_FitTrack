@@ -8,7 +8,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class WorkoutViewModel(private val workoutRepository: WorkoutRepository) : ViewModel() {
+class WorkoutViewModel(
+    private val workoutRepository: WorkoutRepository = Graph.workoutRepository
+) : ViewModel() {
 
 
 

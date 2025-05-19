@@ -56,8 +56,9 @@ import java.util.Locale
 
 @Composable
 fun AddWorkoutScreen(
+    viewModel: WorkoutViewModel,
     navController: NavController,
-    onSaveWorkout: (timestamp: Long, duration: Int, activityType: String, notes: String?) -> Unit
+//    onSaveWorkout: (timestamp: Long, duration: Int, activityType: String, notes: String?) -> Unit
 ) {
     // Get the current context for displaying Toast and Dialogs
     val context = LocalContext.current
@@ -236,13 +237,14 @@ fun AddWorkoutScreen(
                     if (durationInt == null || durationInt <= 0) {
                         Toast.makeText(context, "Please enter a valid duration (minutes)", Toast.LENGTH_SHORT).show()
                     } else {
-                        onSaveWorkout(
+                        viewModel.saveWorkout(
                             selectedDateTimeMillis,
                             durationInt,
                             selectedActivityType,
                             notes.ifBlank { null }
                         )
                         Toast.makeText(context, "Workout record saved!", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier
@@ -256,15 +258,16 @@ fun AddWorkoutScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddWorkoutScreenPreview() {
-    MaterialTheme {
-        AddWorkoutScreen(
-            navController = rememberNavController(),
-            onSaveWorkout = { ts, dur, type, nt ->
-            println("Preview Save: $ts, $dur min, $type, Notes: $nt")
-        })
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun AddWorkoutScreenPreview() {
+//    MaterialTheme {
+//        AddWorkoutScreen(
+//            viewModel = WorkoutViewModel(Graph.workoutRepository),
+//            navController = rememberNavController(),
+////            onSaveWorkout = { ts, dur, type, nt ->
+////            println("Preview Save: $ts, $dur min, $type, Notes: $nt")
+//        })
+//    }
+//}
 
