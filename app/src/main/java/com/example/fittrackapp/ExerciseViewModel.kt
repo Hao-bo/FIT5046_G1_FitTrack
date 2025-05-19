@@ -8,21 +8,22 @@ import kotlinx.coroutines.launch
 
 class ExerciseViewModel : ViewModel() {
 
-    // Used to store course data list
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises
 
-    // Load course data during initialization
     init {
         fetchExercises()
     }
 
     private fun fetchExercises() {
         viewModelScope.launch {
+            println("Start calling Retrofit")
             try {
                 val response = RetrofitClient.api.getExercises()
+                println("Get the number of courses: ${response.results.size}")
                 _exercises.value = response.results
             } catch (e: Exception) {
+                println("Retrofit request failed: ${e.message}")
                 e.printStackTrace()
             }
         }

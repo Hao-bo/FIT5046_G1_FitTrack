@@ -1,6 +1,6 @@
 package com.example.fittrackapp
 
-import com.example.fittrackapp.network.ExerciseApi
+import com.example.fittrackapp.ExerciseApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
