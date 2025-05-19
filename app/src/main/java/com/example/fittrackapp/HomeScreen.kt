@@ -29,7 +29,7 @@ fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        // 顶部标题栏
+        //Top title bar
         Column {
             Text(
                 text = "Home",
@@ -59,7 +59,7 @@ fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 课程列表
+        // Course List
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,14 +75,14 @@ fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Image(
-                            painter = painterResource(id = R.drawable.gym1), // 使用你已有的图
+                            painter = painterResource(id = R.drawable.gym1),
                             contentDescription = "Gym",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
 
                         Text(
-                            text = exercise.name ?: "No name",
+                            text = exercise.translations.firstOrNull()?.name ?: "No name",
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
                                 .padding(16.dp),
@@ -91,7 +91,7 @@ fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
                         )
 
                         Button(
-                            onClick = { /* 你可以添加跳转或收藏操作 */ },
+                            onClick = { /* Add jump or favorite action */ },
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
