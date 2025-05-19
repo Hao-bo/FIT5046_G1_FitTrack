@@ -97,7 +97,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.size(16.dp))
 
         Button(
-            onClick = {},
+            onClick = { navController.navigate("edit_profile") },
             colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
             modifier = Modifier.size(150.dp, 50.dp)
         ) {

@@ -209,7 +209,7 @@ fun BottomNavigationBarM3() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "login",//
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("login") { WelcomeScreen(navController) }
@@ -217,6 +217,7 @@ fun BottomNavigationBarM3() {
             composable("form") {  FormScreen()  }
             composable("map") { MapScreen()  }
             composable("profile") { ProfileScreen(navController) }
+            composable("edit_profile") { EditProfileScreen(navController) }
         }
     }
 
