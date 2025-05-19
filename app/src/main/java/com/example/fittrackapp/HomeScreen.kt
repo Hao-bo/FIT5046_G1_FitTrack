@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +24,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
 
     val exercises by viewModel.exercises.collectAsState()
+
+//    val myCourses by viewModel.myCourses.collectAsState()
 
     Column(
         modifier = Modifier
@@ -89,14 +92,17 @@ fun HomeScreen(viewModel: ExerciseViewModel = viewModel()) {
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge
                         )
-
+                        val context = LocalContext.current
                         Button(
-                            onClick = { /* Add jump or favorite action */ },
+                            onClick = {
+                                viewModel.addToMyCourses(context,exercise)
+                            },
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
                         ) {
                             Text("Move with us!")
+
                         }
                     }
                 }

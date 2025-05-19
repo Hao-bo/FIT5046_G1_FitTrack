@@ -1,5 +1,7 @@
 package com.example.fittrackapp
 
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +12,14 @@ class ExerciseViewModel : ViewModel() {
 
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises
+
+    private val _myCourses = MutableStateFlow<List<Exercise>>(emptyList())
+    val myCourses: StateFlow<List<Exercise>> = _myCourses
+
+    fun addToMyCourses(context: Context, exercise: Exercise) {
+        _myCourses.value = _myCourses.value + exercise
+        Toast.makeText(context, "Course added successfully:${exercise.translations.firstOrNull()?.name ?: "Unnamed"}", Toast.LENGTH_SHORT).show()
+    }
 
     init {
         fetchExercises()
