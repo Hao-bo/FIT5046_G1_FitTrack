@@ -10,11 +10,12 @@ class FitTrackApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-            // Use Provider which is the latest SDK version of Mapbox
-            val mapboxNavigation = MapboxNavigationProvider.create(
-                NavigationOptions.Builder(applicationContext)
-                    .build()
-            )
+        Graph.provide(this)
+        // Use Provider which is the latest SDK version of Mapbox
+        val mapboxNavigation = MapboxNavigationProvider.create(
+            NavigationOptions.Builder(applicationContext)
+                .build()
+        )
 
     }
 }

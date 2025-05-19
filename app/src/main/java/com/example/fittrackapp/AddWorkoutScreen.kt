@@ -252,7 +252,7 @@ fun AddWorkoutScreen(
                 Text("Upload my workout record")
             }
         }
-        
+
     }
 }
 
