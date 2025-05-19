@@ -209,7 +209,7 @@ fun BottomNavigationBarM3() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "form",
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("login") { WelcomeScreen(navController) }
