@@ -219,6 +219,7 @@ fun BottomNavigationBarM3() {
             composable("form") {  FormScreen()  }
             composable("map") { MapScreen()  }
             composable("profile") { ProfileScreen(navController) }
+            composable("edit_profile") { EditProfileScreen(navController) }
             composable("add_workout") { AddWorkoutScreen(
                 viewModel = WorkoutViewModel(Graph.workoutRepository),
                 navController,
