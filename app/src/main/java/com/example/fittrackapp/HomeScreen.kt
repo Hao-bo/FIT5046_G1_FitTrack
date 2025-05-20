@@ -27,17 +27,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
 
     val exercises by exerciseViewModel.exercises.collectAsState()
-    val showForm = remember { mutableStateOf(false) } // 默认隐藏
+    val showForm = remember { mutableStateOf(false) }
 
-    // context + DAO + WorkoutViewModel
     val context = LocalContext.current
     val dao = WorkoutDatabase.getDatabase(context).workoutDao()
     val workoutViewModel: WorkoutViewModel = viewModel(factory = WorkoutViewModelFactory(dao))
 
-    // Form Status
     var date by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
+
+    val savedRecords by workoutViewModel.records.collectAsState()
 
     Column(
         modifier = Modifier
@@ -116,7 +116,7 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
             }
         }
 
-        // Show/Hide toggle button
+        // Toggle Form
         Button(
             onClick = { showForm.value = !showForm.value },
             modifier = Modifier
@@ -126,6 +126,7 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
             Text(if (showForm.value) "❌ Hide Training Record" else "＋ Add Training Record")
         }
 
+        // Form Input
         AnimatedVisibility(
             visible = showForm.value,
             enter = fadeIn(),
@@ -141,19 +142,25 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
                     value = date,
                     onValueChange = { date = it },
                     label = { Text("Date (yyyy-MM-dd)") },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 )
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Exercise Name") },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 )
                 OutlinedTextField(
                     value = duration,
                     onValueChange = { duration = it },
                     label = { Text("Duration (minutes)") },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 )
                 Button(
                     onClick = {
@@ -177,6 +184,50 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
                         .padding(vertical = 8.dp)
                 ) {
                     Text("Save Record")
+                }
+            }
+        }
+
+        // Display saved training records
+        Text(
+            text = "Saved Records",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            items(savedRecords) { record ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(" ${record.date}")
+                            Text(" ${record.exerciseName}")
+                            Text(" ${record.durationMinutes} min")
+                        }
+                        Button(
+                            onClick = {
+                                workoutViewModel.deleteRecord(record)
+                                Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text("Delete")
+                        }
+                    }
                 }
             }
         }

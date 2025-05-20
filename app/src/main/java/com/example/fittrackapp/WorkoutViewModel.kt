@@ -31,6 +31,12 @@ class WorkoutViewModel(private val dao: WorkoutDao) : ViewModel() {
             }
         }
     }
+    fun deleteRecord(record: WorkoutRecord) {
+        viewModelScope.launch {
+            dao.delete(record)
+            loadRecords()
+        }
+    }
 
 }
 
