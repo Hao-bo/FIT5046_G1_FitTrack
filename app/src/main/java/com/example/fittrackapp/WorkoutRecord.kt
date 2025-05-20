@@ -1,4 +1,4 @@
-package com.example.fittrackapp.model
+package com.example.fittrackapp
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

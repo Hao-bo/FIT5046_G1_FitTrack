@@ -1,9 +1,9 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.fittrackapp.model.WorkoutRecord
+import com.example.fittrackapp.WorkoutRecord
 import kotlinx.coroutines.flow.Flow
 
 @Dao

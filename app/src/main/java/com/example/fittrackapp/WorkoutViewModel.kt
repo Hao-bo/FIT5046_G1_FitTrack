@@ -2,8 +2,8 @@ package com.example.fittrackapp
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fittrackapp.data.WorkoutDao
-import com.example.fittrackapp.model.WorkoutRecord
+import com.example.fittrackapp.WorkoutDao
+import com.example.fittrackapp.WorkoutRecord
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
