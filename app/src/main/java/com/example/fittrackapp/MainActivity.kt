@@ -1,11 +1,14 @@
 package com.example.fittrackapp
 
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +67,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import android.Manifest
 
 class MainActivity : ComponentActivity(), PermissionsListener {
 
@@ -71,11 +76,23 @@ class MainActivity : ComponentActivity(), PermissionsListener {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+        permissionsManager = PermissionsManager(this)
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
         } else {
             permissionsManager = PermissionsManager(this)
             permissionsManager.requestLocationPermissions(this)
+        }
+
+        // Ask for notification permission
+        askNotificationPermission()
+
+        // ... (rest of your onCreate code)
+        if (PermissionsManager.areLocationPermissionsGranted(this)) { //
+            // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
+        } else {
+            permissionsManager = PermissionsManager(this) //
+            permissionsManager.requestLocationPermissions(this) //
         }
 
         enableEdgeToEdge()
@@ -85,6 +102,39 @@ class MainActivity : ComponentActivity(), PermissionsListener {
             }
         }
     }
+
+    // Declare the launcher at the top of your Activity/Fragment
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. You can now show notifications.
+                Toast.makeText(this, "Notification permission granted.", Toast.LENGTH_SHORT).show()
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // feature requires a permission that the user has denied.
+                Toast.makeText(this, "Notification permission denied. Reminders might not work.", Toast.LENGTH_LONG).show()
+            }
+        }
+
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // TODO: Display an educational UI explaining to the user the importance of
+                // this permission for the feature.
+                // For now, just request the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

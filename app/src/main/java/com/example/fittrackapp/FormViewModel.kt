@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fittrackapp.data.WorkoutRepository
 import com.example.fittrackapp.data.WorkoutSession
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ class FormViewModel(
 
 
     // when _selectedDateMillis update，automatically query the exercise data of the corresponding date
+    @OptIn(ExperimentalCoroutinesApi::class)
     val workoutsForSelectedDate: StateFlow<List<WorkoutSession>> =
         currentUserId.flatMapLatest { userId ->
             if (userId == null) {
@@ -60,6 +62,18 @@ class FormViewModel(
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun resetData() {
+        // 重置选定的日期和月份
+        _selectedDateMillis.value = null
+        _selectedYearMonth.value = null
+
+        // 加载当前日期和月份（但此时 currentUserId 应该是 null）
+        loadWorkoutsForDate(System.currentTimeMillis())
+        val cal = Calendar.getInstance()
+        loadWorkoutsForMonth(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1)
+    }
+
 
     /**
      * Updates the date selected by the user and triggers a data load.
