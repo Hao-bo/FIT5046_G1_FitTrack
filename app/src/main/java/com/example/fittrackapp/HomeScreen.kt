@@ -1,6 +1,8 @@
 package com.example.fittrackapp
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.widget.DatePicker
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.util.*
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -38,11 +41,9 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
     var date by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
+    var filterDate by remember { mutableStateOf("") }
+
     val savedRecords by workoutViewModel.records.collectAsState()
-
-    var selectedDate by remember { mutableStateOf("") }
-
-    val filteredRecords = if (selectedDate.isBlank()) savedRecords else savedRecords.filter { it.date == selectedDate }
 
     Column(
         modifier = Modifier
@@ -131,7 +132,30 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
             Text(if (showForm.value) "❌ Hide Training Record" else "＋ Add Training Record")
         }
 
-        // Form Input
+        // Filter by Date
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(onClick = {
+                val calendar = Calendar.getInstance()
+                val datePicker = DatePickerDialog(
+                    context,
+                    { _: DatePicker, year: Int, month: Int, day: Int ->
+                        val selected = String.format("%04d-%02d-%02d", year, month + 1, day)
+                        filterDate = selected
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                )
+                datePicker.show()
+            }) {
+                Icon(Icons.Default.CalendarToday, contentDescription = "Filter by date")
+            }
+        }
+
         AnimatedVisibility(
             visible = showForm.value,
             enter = fadeIn(),
@@ -190,60 +214,48 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
                 ) {
                     Text("Save Record")
                 }
-            }
-        }
 
-        // Filter input
-        OutlinedTextField(
-            value = selectedDate,
-            onValueChange = { selectedDate = it },
-            label = { Text("Filter by Date (yyyy-MM-dd)") },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
+                // Saved Records
+                Text(
+                    text = "Saved Records",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
 
-        // Display saved training records
-        Text(
-            text = "Saved Records",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            items(filteredRecords) { record ->
-                Card(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                        .padding(bottom = 16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(" ${record.date}")
-                            Text(" ${record.exerciseName}")
-                            Text(" ${record.durationMinutes} min")
-                        }
-                        Button(
-                            onClick = {
-                                workoutViewModel.deleteRecord(record)
-                                Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    val filtered = if (filterDate.isNotBlank()) savedRecords.filter { it.date == filterDate } else savedRecords
+                    items(filtered) { record ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
                         ) {
-                            Text("Delete")
+                            Row(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(" ${record.date}")
+                                    Text(" ${record.exerciseName}")
+                                    Text(" ${record.durationMinutes} min")
+                                }
+                                Button(
+                                    onClick = {
+                                        workoutViewModel.deleteRecord(record)
+                                        Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                ) {
+                                    Text("Delete")
+                                }
+                            }
                         }
                     }
                 }
