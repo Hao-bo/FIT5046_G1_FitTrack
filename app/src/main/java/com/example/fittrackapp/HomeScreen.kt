@@ -9,6 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,8 +38,11 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
     var date by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
-
     val savedRecords by workoutViewModel.records.collectAsState()
+
+    var selectedDate by remember { mutableStateOf("") }
+
+    val filteredRecords = if (selectedDate.isBlank()) savedRecords else savedRecords.filter { it.date == selectedDate }
 
     Column(
         modifier = Modifier
@@ -188,6 +193,19 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
             }
         }
 
+        // Filter input
+        OutlinedTextField(
+            value = selectedDate,
+            onValueChange = { selectedDate = it },
+            label = { Text("Filter by Date (yyyy-MM-dd)") },
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        )
+
         // Display saved training records
         Text(
             text = "Saved Records",
@@ -200,7 +218,7 @@ fun HomeScreen(exerciseViewModel: ExerciseViewModel = viewModel()) {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            items(savedRecords) { record ->
+            items(filteredRecords) { record ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
