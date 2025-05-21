@@ -153,6 +153,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _isSignInSuccessful.value = false // reset state or navigate
             _isLoading.value = false
             _errorMessage.value = null
+
+            Graph.formViewModel.clearSelectedDate()
+
         }
     }
 
