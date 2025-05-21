@@ -137,8 +137,12 @@ fun ExerciseDetailScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         val description = englishTranslation?.description ?: "No description available"
+                        val cleanDescription = description
+                            .replace("<p>", "")
+                            .replace("</p>", "\n\n")
+                            .trim()
                         Text(
-                            text = description,
+                            text = cleanDescription,
                             style = MaterialTheme.typography.bodyLarge
                         )
 
