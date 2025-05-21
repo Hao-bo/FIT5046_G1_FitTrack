@@ -46,6 +46,11 @@ class FormViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
+    fun clearSelectedDate() {
+        _selectedDateMillis.value = null
+        _selectedYearMonth.value = null
+    }
+
     val workoutsForSelectedMonth: StateFlow<List<WorkoutSession>> =
         currentUserId.flatMapLatest { userId ->
             if (userId == null) {

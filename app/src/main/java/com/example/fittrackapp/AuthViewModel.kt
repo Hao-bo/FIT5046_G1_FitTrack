@@ -138,7 +138,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun signOut() {
-        Log.d(TAG,"UserID: ${auth.currentUser?.uid}")
         auth.signOut()
         // When a user signs out, clear the current user credential state from all credential providers.
         viewModelScope.launch {
@@ -154,8 +153,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _isSignInSuccessful.value = false // reset state or navigate
             _isLoading.value = false
             _errorMessage.value = null
-//            Graph.formViewModel.resetData()
-            Log.d(TAG,"UserID: ${auth.currentUser?.uid}")
+
+            Graph.formViewModel.clearSelectedDate()
+
         }
     }
 
