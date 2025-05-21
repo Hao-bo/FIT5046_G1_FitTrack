@@ -2,6 +2,7 @@ package com.example.fittrackapp
 
 import android.content.Context
 import androidx.room.Room
+import com.example.fittrackapp.data.ExerciseRepository
 import com.example.fittrackapp.data.WorkoutDatabase
 import com.example.fittrackapp.data.WorkoutRepository
 
@@ -16,6 +17,10 @@ object Graph {
 
     val workoutRepository by lazy {
         WorkoutRepository(workoutDao = database.workoutDao())
+    }
+
+    val exerciseRepository by lazy {
+        ExerciseRepository()
     }
 
     fun provide(context: Context, authVM: AuthViewModel) {

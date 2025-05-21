@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,66 +73,98 @@ fun HomeScreen(navController: NavController){
             LazyColumn(modifier = Modifier.fillMaxSize().weight(1f).padding(bottom = 72.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                items(cardTitles.size) {
-                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                items(1) {
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(8.dp)
+                        .clickable{
+                            navController.navigate("exercise_detail/${ExerciseViewModel.CHEST_EXERCISE_ID}/Chest")
+                        }) {
                         Box(modifier = Modifier.fillMaxSize()){
-                            Image(painter = painterResource(id = R.drawable.gym1),
-                                contentDescription = "Gym",
+                            Image(painter = painterResource(id = R.drawable.chest),
+                                contentDescription = "Chest Exercise",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop)
-                            Text(text = "Class 1",
+                            Text(text = "Chest",
                                 modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge)
-                            Button(onClick = { },
+                            Button(onClick = {
+                                navController.navigate("exercise_detail/${ExerciseViewModel.CHEST_EXERCISE_ID}/Chest")
+                            },
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                                 Text("Move with us!")
                             }
                         }
                     }
-                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(8.dp)
+                        .clickable{
+                            navController.navigate("exercise_detail/${ExerciseViewModel.ABS_EXERCISE_ID}/Abs")
+                        }) {
                         Box(modifier = Modifier.fillMaxSize()){
-                            Image(painter = painterResource(id = R.drawable.gym1),
-                                contentDescription = "Gym",
+                            Image(painter = painterResource(id = R.drawable.abs),
+                                contentDescription = "Abs Exercise",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop)
-                            Text(text = "Class 2",
+                            Text(text = "Abs",
                                 modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge)
-                            Button(onClick = { },
+                            Button(onClick = {
+                                navController.navigate("exercise_detail/${ExerciseViewModel.ABS_EXERCISE_ID}/Abs")
+                            },
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                                 Text("Move with us!")
                             }
                         }
                     }
-                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(8.dp)
+                        .clickable{
+                            navController.navigate("exercise_detail/${ExerciseViewModel.ARMS_EXERCISE_ID}/Arms")
+                        }) {
                         Box(modifier = Modifier.fillMaxSize()){
-                            Image(painter = painterResource(id = R.drawable.gym1),
-                                contentDescription = "Gym",
+                            Image(painter = painterResource(id = R.drawable.arms),
+                                contentDescription = "Arm Exercise",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop)
-                            Text(text = "Class 3",
+                            Text(text = "Arms",
                                 modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge)
-                            Button(onClick = { },
+                            Button(onClick = {
+                                navController.navigate("exercise_detail/${ExerciseViewModel.ARMS_EXERCISE_ID}/Arms")
+                            },
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                                 Text("Move with us!")
                             }
                         }
                     }
-                    Card(modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp)) {
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(8.dp)
+                        .clickable{
+                            navController.navigate("exercise_detail/${ExerciseViewModel.LEGS_EXERCISE_ID}/Legs")
+                        }) {
                         Box(modifier = Modifier.fillMaxSize()){
-                            Image(painter = painterResource(id = R.drawable.gym1),
-                                contentDescription = "Gym",
+                            Image(painter = painterResource(id = R.drawable.leg),
+                                contentDescription = "Leg Exercise",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop)
-                            Text(text = "Class 4",
+                            Text(text = "Leg",
                                 modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge)
-                            Button(onClick = { },
+                            Button(onClick = {
+                                navController.navigate("exercise_detail/${ExerciseViewModel.LEGS_EXERCISE_ID}/Legs")
+                            },
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                                 Text("Move with us!")
                             }
@@ -145,5 +178,5 @@ fun HomeScreen(navController: NavController){
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
-//    HomeScreen(navController = NavController)
+    HomeScreen(navController = NavController(LocalContext.current))
 }

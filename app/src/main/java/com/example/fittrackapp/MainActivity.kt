@@ -69,6 +69,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import android.Manifest
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 class MainActivity : ComponentActivity(), PermissionsListener {
 
@@ -276,6 +278,22 @@ fun BottomNavigationBarM3() {
 //                    navController.popBackStack()
 //                }
             ) }
+
+            composable(
+                route = "exercise_detail/{exerciseId}/{muscleName}",
+                arguments = listOf(
+                    navArgument("exerciseId") { type = NavType.IntType },
+                    navArgument("muscleName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val exerciseId = backStackEntry.arguments?.getInt("exerciseId") ?: 0
+                val muscleName = backStackEntry.arguments?.getString("muscleName") ?: ""
+                ExerciseDetailScreen(
+                    navController = navController,
+                    exerciseId = exerciseId,
+                    muscleName = muscleName
+                )
+            }
         }
     }
 
