@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.auth
 
 import android.app.Application
 import android.util.Log
@@ -11,25 +11,32 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fittrackapp.data.User
+import com.example.fittrackapp.di.Graph
+import com.example.fittrackapp.R
+import com.example.fittrackapp.data.model.User
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
+/**
+ * ViewModel responsible for authentication-related logic, including sign-in, sign-up,
+ * sign-out, and managing user profile data with Firebase and Firestore.
+ *
+ * @param application The application context.
+ */
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     internal val auth: FirebaseAuth = Firebase.auth
-    private val credentialManager: CredentialManager = CredentialManager.create(getApplication())
+    private val credentialManager: CredentialManager = CredentialManager.Companion.create(getApplication())
 
     private var _currentUserId = MutableStateFlow<String?>(auth.currentUser?.uid)
     var currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
@@ -76,6 +83,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Updates the [_currentUserId] StateFlow with the current Firebase user's UID.
+     * This function is called after successful sign-in or sign-up.
+     */
     private fun updateCurrentUserId() {
         Log.d(TAG,"update function UserID: ${auth.currentUser?.uid}")
         _currentUserId.value = auth.currentUser?.uid
@@ -85,7 +96,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Load the user profile, or create a new one if it doesn't exist
+     * Loads the user profile from Firestore based on the provided userId.
+     * If the user profile doesn't exist, it creates a new one.
+     * Updates the last login time for existing users.
+     *
+     * @param userId The unique ID of the user.
      */
     private fun loadUserProfile(userId: String) {
         viewModelScope.launch {
@@ -110,7 +125,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Create a new user in Firestore
+     * Creates a new user document in Firestore using the details from the FirebaseUser object.
+     *
+     * @param firebaseUser The FirebaseUser object containing user details.
      */
     private fun createUserInFirestore(firebaseUser: FirebaseUser?) {
         firebaseUser?.let { user ->
@@ -124,6 +141,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
 
             viewModelScope.launch {
+                // Attempt to create or update the user in the repository.
                 val result = Graph.userRepository.createOrUpdateUser(newUser)
                 result.fold(
                     onSuccess = { createdUser ->
@@ -139,12 +157,16 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Update User Profile
+     * Updates specified fields of the current user's profile in Firestore.
+     *
+     * @param fields A map where keys are field names and values are the new field values.
      */
     fun updateUserProfile(fields: Map<String, Any>) {
+        // Get the current user's ID; return if no user is signed in.
         val userId = _currentUserId.value ?: return
 
         viewModelScope.launch {
+            // Attempt to update user fields in the repository.
             val result = Graph.userRepository.updateUserFields(userId, fields)
             result.fold(
                 onSuccess = { success ->
@@ -160,17 +182,31 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Creates a [androidx.credentials.GetCredentialRequest] for Google Sign-In.
+     * Configures the request to filter by authorized accounts and use the web client ID.
+     *
+     * @return A [androidx.credentials.GetCredentialRequest] object.
+     */
     fun createGoogleSignInRequest(): GetCredentialRequest {
+        // Configure Google ID options for the sign-in request.
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true) // Only show accounts previously used to sign in.
             .setServerClientId(getApplication<Application>().getString(R.string.default_web_client_id))
             .build()
 
+        // Build the GetCredentialRequest with the Google ID option.
         return GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
             .build()
     }
 
+    /**
+     * Processes the [androidx.credentials.GetCredentialResponse] received from a successful Google Sign-In attempt.
+     * Extracts the Google ID token and uses it to sign in with Firebase.
+     *
+     * @param result The [androidx.credentials.GetCredentialResponse] from the Google Sign-In flow.
+     */
     fun processGoogleSignIn(result: GetCredentialResponse) {
         // Update the UI state
         _isLoading.value = true
@@ -179,10 +215,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         // Get credential from Response
         val credential = result.credential
         // Check if credential is of type Google ID
-        if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+        if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             try {
                 // Create Google ID Token
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val googleIdTokenCredential = GoogleIdTokenCredential.Companion.createFrom(credential.data)
                 // Sign in to Firebase with using the token
                 firebaseAuthWithGoogle(googleIdTokenCredential.idToken)
             } catch (e: Exception) {
@@ -197,6 +233,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Authenticates with Firebase using a Google ID token.
+     * On success, updates user information and sign-in status.
+     * On failure, updates the error message.
+     *
+     * @param idToken The Google ID token string.
+     */
     private fun firebaseAuthWithGoogle(idToken: String) {
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(firebaseCredential)
@@ -216,20 +259,37 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    /**
+     * Handles errors that occur during the Google Sign-In [GetCredentialRequest].
+     *
+     * @param e The [androidx.credentials.exceptions.GetCredentialException] that occurred.
+     */
     fun handleGoogleSignInError(e: GetCredentialException) {
         Log.e(TAG, "GetCredentialException", e)
         _errorMessage.value = "Google login fail: ${e.message}"
         _isLoading.value = false
     }
 
+    /**
+     * Resets the [_isSignInSuccessful] flag to false.
+     * Typically called by the UI after navigating upon successful sign-in.
+     */
     fun resetSignInSuccessFlag() {
         _isSignInSuccessful.value = false
     }
 
+    /**
+     * Clears any existing error message by setting [_errorMessage] to null.
+     */
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
 
+
+    /**
+     * Signs out the current user from Firebase and clears credential state.
+     * Resets relevant ViewModel states.
+     */
     fun signOut() {
         Log.d(TAG, "UserID: ${auth.currentUser?.uid}")
         _userProfile.value = null
@@ -254,6 +314,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Signs in a user with their email and password using Firebase Authentication.
+     *
+     * @param email The user's email address.
+     * @param password The user's password.
+     */
     // Regular sign in and sign up
     fun signInWithEmailAndPassword(email: String, password: String) {
         _isLoading.value = true
@@ -279,6 +345,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    /**
+     * Registers a new user with their email and password using Firebase Authentication.
+     *
+     * @param email The new user's email address.
+     * @param password The new user's password.
+     */
     fun signUpWithEmailAndPassword(email: String, password: String) {
         _isLoading.value = true
         _errorMessage.value = null

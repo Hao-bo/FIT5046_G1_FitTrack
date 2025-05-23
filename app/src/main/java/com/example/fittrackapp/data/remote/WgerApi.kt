@@ -1,6 +1,6 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.remote
 
-import com.example.fittrackapp.data.ExerciseInfo
+import com.example.fittrackapp.data.model.ExerciseInfo
 import retrofit2.http.GET
 import retrofit2.http.Path
 

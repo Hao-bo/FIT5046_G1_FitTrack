@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.profile
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -9,14 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,8 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
@@ -49,17 +43,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.fittrackapp.di.Graph
+import com.example.fittrackapp.ui.auth.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
+/**
+ * Composable function for the User Profile Screen.
+ * This screen displays user profile information (username, email, fitness details)
+ * and allows users to edit their fitness information or log out.
+ *
+ * @param navController The NavController for navigation actions.
+ * @param authViewModel The ViewModel responsible for authentication and user profile data.
+ * Defaults to the instance provided by Graph.authViewModel.
+ */
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -175,6 +178,8 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.size(32.dp))
 
+                // AnimatedVisibility for the "Data saved" message.
+                // The Chinese comment "Data has been saved！" is displayed.
                 // Edit Mode Messages
                 AnimatedVisibility(
                     visible = showSavedMessage,
@@ -291,6 +296,7 @@ fun ProfileScreen(
                     }
                 }
 
+                // Buttons section: Save/Cancel in edit mode, Logout in display mode.
                 // Button area
                 if (isEditMode) {
                     Row(
@@ -382,6 +388,12 @@ fun ProfileScreen(
     }
 }
 
+/**
+ * A helper composable to display a label and its corresponding value for profile information.
+ *
+ * @param label The label text (e.g., "Height", "Weight").
+ * @param value The value text to display.
+ */
 @Composable
 fun ProfileInfoItem(
     label: String,
@@ -408,8 +420,3 @@ fun ProfileInfoItem(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewProfileScreen() {
-//    ProfileScreen(navController = rememberNavController())
-}

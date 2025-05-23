@@ -1,10 +1,9 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.form
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import android.icu.util.Calendar
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,32 +39,48 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.breens.beetablescompose.BeeTablesCompose
-import com.example.fittrackapp.data.WorkoutSession
+import com.example.fittrackapp.ui.form.FormViewModel
+import com.example.fittrackapp.di.Graph
+import com.example.fittrackapp.R
+import com.example.fittrackapp.data.model.WorkoutSession
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.Date
 import java.util.Locale
 
 data class WorkoutData(val time: String, val category: String)
 
+/**
+ * Formats a timestamp (Long) into a date string (e.g., "yyyy-MM-dd").
+ * @param timestamp The timestamp in milliseconds since epoch.
+ * @return A formatted date string.
+ */
 // formatting timestamps
 fun formatTimestampToDateString(timestamp: Long): String {
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
 
+/**
+ * Formats a timestamp (Long) into a time string (e.g., "HH:mm").
+ * @param timestamp The timestamp in milliseconds since epoch.
+ * @return A formatted time string.
+ */
 fun formatTimestampToTimeString(timestamp: Long): String {
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
 
+/**
+ * Composable function for the Form Screen.
+ * This screen allows users to view their workout sessions filtered by date or by month.
+ *
+ * @param viewModel The [FormViewModel] instance used to fetch and manage workout data.
+ * Defaults to the instance provided by [Graph.formViewModel].
+ */
 @Composable
 fun FormScreen(
     viewModel: FormViewModel = Graph.formViewModel // get FormViewModel instance
@@ -151,181 +166,12 @@ fun FormScreen(
     }
 }
 
-/*
-implement in A3
-@Composable
-fun FormScreen(
-    viewModel: FormViewModel = viewModel()
-) {
 
-    // 从 ViewModel 收集锻炼数据
-    val workoutsForDate by viewModel.workoutsForSelectedDate.collectAsState()
-    val workoutsForMonth by viewModel.workoutsForSelectedMonth.collectAsState()
-
-    // 日期选择器状态
-    var showDatePicker by remember { mutableStateOf(false) }
-    val currentCalendar = remember { Calendar.getInstance() } // 用于获取默认年份
-
-    // 月份和年份选择器状态
-    val months = remember { (1..12).map { SimpleDateFormat("MMM", Locale.getDefault()).format(Calendar.getInstance().apply { set(Calendar.MONTH, it - 1) }.time) } }
-    var selectedMonthName by remember { mutableStateOf(months[currentCalendar.get(Calendar.MONTH)]) } // 默认当前月份
-    var selectedYearForMonthView by remember { mutableIntStateOf(currentCalendar.get(Calendar.YEAR)) } // 默认当前年份
-    var monthDropdownExpanded by remember { mutableStateOf(false) }
-
-    val workoutDataByDay = listOf(
-        WorkoutData("08:00 AM", "Warm-up"),
-        WorkoutData("10:00 AM", "Strength"),
-        WorkoutData("12:00 PM", "Cardio"),
-        WorkoutData("02:00 PM", "Warm-up"),
-    )
-
-    val workoutDataByMonth = listOf(
-        WorkoutData("01/01/2024", "Warm-up"),
-        WorkoutData("02/01/2024", "Strength"),
-        WorkoutData("03/01/2024", "Cardio")
-    )
-
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(64.dp)) {
-            Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                val headerTitles = listOf("Time","Category")
-                DisplayDatePicker()
-                Spacer(modifier = Modifier.height(16.dp))
-                BeeTablesCompose(data = workoutDataByDay,headerTableTitles = headerTitles)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                val headerTitles = listOf("Date","Category")
-                TestMenu()
-                Spacer(modifier = Modifier.height(16.dp))
-                BeeTablesCompose(data = workoutDataByMonth,headerTableTitles = headerTitles)
-            }
-        }
-    }
-}
-
-
-
-
-@RequiresApi(0)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DisplayDatePicker() {
-
-    val calendar = Calendar.getInstance()
-    var birthday by remember { mutableStateOf("") }
-    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = Instant.now().toEpochMilli()
-    )
-    var showDatePicker by remember {
-        mutableStateOf(false)
-    }
-    var selectedDate by remember {
-        mutableStateOf(calendar.timeInMillis)
-    }
-        TextField(
-            value = birthday,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Search by date") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker = true },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.calendar_icon),
-                    contentDescription = "Select Date",
-                    modifier = Modifier
-                        .clickable { showDatePicker = true }
-                        .size(40.dp)
-                )
-            }
-        )
-        if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = {
-                    showDatePicker = false
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                        selectedDate = datePickerState.selectedDateMillis!!
-                        birthday = "DoB: ${formatter.format(Date(selectedDate))}"
-                    }) {
-                        Text(text = "OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                    }) {
-                        Text(text = "Cancel")
-                    }
-                }
-            ) //end of dialog
-            { //still column scope
-                DatePicker(
-                    state = datePickerState
-                )
-            }
-        }// end of if
-
-}
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TestMenu(){
-    val states = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    var isExpanded by remember { mutableStateOf(false) }
-    var selectedState = remember { mutableStateOf(states[0])}
-
-        Spacer(modifier = Modifier.height(36.dp))
-        ExposedDropdownMenuBox(
-            expanded = isExpanded,
-            modifier = Modifier.fillMaxWidth(),
-            onExpandedChange = { isExpanded = it },
-        ) {
-            TextField(
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-                    .focusProperties {
-                        canFocus = false
-                    }
-                    .padding(bottom = 8.dp),
-                readOnly = true,
-                value = selectedState.value,
-                onValueChange = {},
-                label = { Text("Month") },
-//manages the arrow icon up and down
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
-            )
-            ExposedDropdownMenu(
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }
-            )
-            {
-                states.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption) },
-                        onClick = {
-                            selectedState.value = selectionOption
-                            isExpanded = false},
-                        contentPadding =
-                            ExposedDropdownMenuDefaults.ItemContentPadding,
-                    )
-                }
-            }
-        }
-
-}
-
-*/
-
+/**
+ * Composable function to display a single workout session in a Card.
+ *
+ * @param workout The [WorkoutSession] data to display.
+ */
 @Composable
 fun WorkoutItemCard(workout: WorkoutSession) {
     Card(
@@ -375,6 +221,13 @@ fun WorkoutItemCard(workout: WorkoutSession) {
 }
 
 
+/**
+ * Composable function for a Date Picker TextField and Dialog.
+ *
+ * @param showDialog Boolean state to control the visibility of the DatePickerDialog.
+ * @param onShowDialogChange Lambda to update the [showDialog] state.
+ * @param onDateSelected Lambda callback that provides the selected date as a UTC millisecond timestamp.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DisplayDatePicker(
@@ -429,6 +282,16 @@ fun DisplayDatePicker(
 }
 
 
+/**
+ * Composable function for a Month and Year Picker using an ExposedDropdownMenuBox.
+ *
+ * @param selectedMonthName The currently selected month's name (e.g., "Jan").
+ * @param selectedYear The currently selected year (e.g., 2023).
+ * @param months List of month names to display in the dropdown.
+ * @param isExpanded Boolean state to control the expansion of the dropdown menu.
+ * @param onExpandedChange Lambda to update the [isExpanded] state.
+ * @param onMonthSelected Lambda callback that provides the name of the selected month.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthYearPicker(

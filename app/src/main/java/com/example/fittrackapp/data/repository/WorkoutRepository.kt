@@ -1,5 +1,7 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.repository
 
+import com.example.fittrackapp.data.local.WorkoutDao
+import com.example.fittrackapp.data.model.WorkoutSession
 import kotlinx.coroutines.flow.Flow
 
 class WorkoutRepository(private val workoutDao: WorkoutDao) {

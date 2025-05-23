@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.workout
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -23,19 +23,15 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,15 +41,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.fittrackapp.ui.workout.WorkoutViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Composable function for the "Add Workout" screen.
+ * Allows users to input details about their workout session.
+ *
+ * @param viewModel The ViewModel responsible for handling workout data logic.
+ * @param navController The NavController used for navigation actions.
+ */
 @Composable
 fun AddWorkoutScreen(
     viewModel: WorkoutViewModel,
@@ -116,6 +118,7 @@ fun AddWorkoutScreen(
     )
 
 
+    // Root container for the screen content.
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -125,6 +128,7 @@ fun AddWorkoutScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
+            // Row for the close button, aligned to the end (right side).
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -258,16 +262,4 @@ fun AddWorkoutScreen(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun AddWorkoutScreenPreview() {
-//    MaterialTheme {
-//        AddWorkoutScreen(
-//            viewModel = WorkoutViewModel(Graph.workoutRepository),
-//            navController = rememberNavController(),
-////            onSaveWorkout = { ts, dur, type, nt ->
-////            println("Preview Save: $ts, $dur min, $type, Notes: $nt")
-//        })
-//    }
-//}
 

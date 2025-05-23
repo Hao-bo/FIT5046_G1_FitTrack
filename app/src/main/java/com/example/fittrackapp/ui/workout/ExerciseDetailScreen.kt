@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.workout
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +22,15 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 
+/**
+ * Composable function for the Exercise Detail Screen.
+ * Displays detailed information about a specific exercise.
+ *
+ * @param navController The NavController for navigation actions.
+ * @param exerciseId The ID of the exercise to display.
+ * @param muscleName The name of the muscle group, used in the TopAppBar title.
+ * @param viewModel The ViewModel responsible for fetching and managing exercise data.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseDetailScreen(
@@ -31,10 +39,15 @@ fun ExerciseDetailScreen(
     muscleName: String,
     viewModel: ExerciseViewModel = viewModel(factory = ExerciseViewModelFactory())
 ) {
+    // LaunchedEffect to fetch exercise information when exerciseId changes.
+    // This ensures data is loaded or reloaded if the user navigates to this screen
+    // with a different exercise ID.
     LaunchedEffect(exerciseId) {
         viewModel.getExerciseInfo(exerciseId)
     }
 
+    // Collect the UI state from the ViewModel as a Compose State.
+    // This allows the UI to reactively update when the state changes.
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -54,11 +67,14 @@ fun ExerciseDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Handle different UI states: Loading, Error, Success.
             when (val state = uiState) {
                 is ExerciseUiState.Loading -> {
+                    // Display a CircularProgressIndicator in the center when data is loading.
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is ExerciseUiState.Error -> {
+                    // Display an error message and a retry button if data fetching fails.
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -78,6 +94,7 @@ fun ExerciseDetailScreen(
                     }
                 }
                 is ExerciseUiState.Success -> {
+                    // Display the exercise information when data is successfully loaded.
                     val exercise = state.exerciseInfo
                     val scrollState = rememberScrollState()
 

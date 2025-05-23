@@ -1,10 +1,8 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.map
 
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +43,6 @@ import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Insets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -53,7 +50,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -61,7 +57,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import com.mapbox.maps.CameraOptions
@@ -73,7 +68,8 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.DisposableEffect
-import com.mapbox.navigation.base.options.NavigationOptions
+import com.example.fittrackapp.ui.map.MapViewModel
+import com.example.fittrackapp.R
 import com.mapbox.navigation.core.MapboxNavigationProvider
 import com.mapbox.navigation.ui.maps.NavigationStyles
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
@@ -82,7 +78,14 @@ import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources
 
-
+/**
+ * Composable function for the Map Screen.
+ * This screen displays a Mapbox map, allows users to search for nearby gyms,
+ * view them as markers, and navigate to a selected gym.
+ *
+ * @param mapViewModel The ViewModel responsible for map-related logic,
+ * fetching gym data, user location, and handling navigation.
+ */
 @Composable
 fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
 
@@ -130,6 +133,7 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
 
 
     // clean resource when user go to other page
+    // DisposableEffect to clean up route line resources when the composable leaves composition.
     DisposableEffect(Unit) {
         onDispose {
             routeLineView.cancel()
@@ -137,6 +141,7 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
         }
     }
 
+    // LaunchedEffect to update the route line on the map when navigationRoutes change.
     // update route
     LaunchedEffect(navigationRoutes) {
         if (navigationRoutes.isNotEmpty()) {
@@ -448,6 +453,11 @@ fun MapScreen(mapViewModel: MapViewModel = viewModel()) {
     }
 }
 
+/**
+ * Creates a custom marker bitmap from a drawable resource.
+ * @param context The context to access resources.
+ * @return A Bitmap object for the custom marker.
+ */
 // custom marker bitmap
 fun createCustomMarkerBitmap(context: Context): Bitmap {
     val drawableId = R.drawable.red_marker
@@ -467,6 +477,16 @@ fun MapScreenPreview() {
     )
 }
 
+/**
+ * Composable function to display information about a single gym in a Card.
+ *
+ * @param name The name of the gym.
+ * @param address The address of the gym.
+ * @param hours The opening hours of the gym (currently a placeholder).
+ * @param distance The distance to the gym (currently a placeholder).
+ * @param description A description of the gym (uses categories from API).
+ * @param onNavigateClick Lambda function to be invoked when the "Navigate To" button is clicked.
+ */
 @Composable
 fun GymCard(
     name: String,

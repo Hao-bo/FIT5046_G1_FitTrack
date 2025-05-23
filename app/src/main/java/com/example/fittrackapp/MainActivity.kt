@@ -16,14 +16,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +35,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fittrackapp.ui.theme.FitTrackAppTheme
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.TopAppBar
@@ -59,7 +54,6 @@ import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.core.permissions.PermissionsListener
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,7 +66,22 @@ import android.Manifest
 import androidx.compose.material.Surface
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.fittrackapp.di.Graph
+import com.example.fittrackapp.ui.auth.WelcomeScreen
+import com.example.fittrackapp.ui.form.FormScreen
+import com.example.fittrackapp.ui.home.HomeScreen
+import com.example.fittrackapp.ui.map.MapScreen
+import com.example.fittrackapp.ui.profile.EditProfileScreen
+import com.example.fittrackapp.ui.profile.ProfileScreen
+import com.example.fittrackapp.ui.workout.AddWorkoutScreen
+import com.example.fittrackapp.ui.workout.ExerciseDetailScreen
+import com.example.fittrackapp.ui.workout.WorkoutViewModel
 
+/**
+ * The main activity of the application.
+ * It sets up the UI using Jetpack Compose, handles permissions (location and notifications),
+ * and initializes the navigation structure.
+ */
 class MainActivity : ComponentActivity(), PermissionsListener {
 
     lateinit var permissionsManager: PermissionsManager
@@ -119,6 +128,9 @@ class MainActivity : ComponentActivity(), PermissionsListener {
             }
         }
 
+    /**
+     * Requests notification permission if running on Android 13 (TIRAMISU) or higher.
+     */
     private fun askNotificationPermission() {
         // This is only necessary for API level >= 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -138,16 +150,30 @@ class MainActivity : ComponentActivity(), PermissionsListener {
         }
     }
 
+
+    /**
+     * Callback for the result from requesting permissions (deprecated).
+     * This is part of the older permission handling mechanism.
+     * Mapbox PermissionsManager might still rely on this for its internal workings.
+     */
     @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+        /**
+         * Callback from Mapbox PermissionsListener when an explanation for location permission is needed.
+         * @param permissionsToExplain A list of permissions that require an explanation.
+         */
         override fun onExplanationNeeded(permissionsToExplain: List<String>) {
             Toast.makeText(this, "You need to accept location permissions.", Toast.LENGTH_SHORT).show()
         }
 
+        /**
+        * Callback from Mapbox PermissionsListener with the result of the location permission request.
+        * @param granted True if the permission was granted, false otherwise.
+        */
         override fun onPermissionResult(granted: Boolean) {
             if (granted) {
                 Toast.makeText(this, "Location permission granted.", Toast.LENGTH_SHORT).show()
@@ -161,9 +187,19 @@ class MainActivity : ComponentActivity(), PermissionsListener {
         }
 }
 
+/**
+ * Data class to define a navigation route for the bottom navigation bar.
+ * @param route The route string used by NavController.
+ * @param icon The icon to display for this route.
+ * @param label The text label for this route.
+ */
 data class NavRoute(val route: String,val icon: ImageVector,val label: String)
 
 
+/**
+ * Composable function that sets up the main UI structure with a Scaffold,
+ * TopAppBar (conditionally shown), BottomNavigationBar (conditionally shown), and NavHost for screen navigation.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationBarM3() {
@@ -216,16 +252,6 @@ fun BottomNavigationBarM3() {
 
                         Spacer(modifier = Modifier.weight(1f))
 
-//                    if (currentRoute == "home"){
-//                        Icon(
-//                            imageVector = Icons.Default.Add,
-//                            contentDescription = "Upload workout data",
-//                            modifier = Modifier.size(24.dp)
-//                                .clickable {
-//                                    showDialog = true
-//                                }
-//                        )
-//                    }
 
                     }
                 }
@@ -273,18 +299,17 @@ fun BottomNavigationBarM3() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("login") { WelcomeScreen(navController) }
-            composable("home") {  HomeScreen(navController)  }
-            composable("form") {  FormScreen()  }
-            composable("map") { MapScreen()  }
+            composable("home") { HomeScreen(navController) }
+            composable("form") { FormScreen() }
+            composable("map") { MapScreen() }
             composable("profile") { ProfileScreen(navController) }
             composable("edit_profile") { EditProfileScreen(navController) }
-            composable("add_workout") { AddWorkoutScreen(
-                viewModel = WorkoutViewModel(Graph.workoutRepository),
-                navController,
-//                onSaveWorkout = { timestamp, duration, activityType, notes ->
-//                    navController.popBackStack()
-//                }
-            ) }
+            composable("add_workout") {
+                AddWorkoutScreen(
+                    viewModel = WorkoutViewModel(Graph.workoutRepository),
+                    navController,
+                )
+            }
 
             composable(
                 route = "exercise_detail/{exerciseId}/{muscleName}",
@@ -304,6 +329,8 @@ fun BottomNavigationBarM3() {
         }
     }
 
+    // AlertDialog, controlled by showDialog state.
+    // This dialog seems to be for uploading workout data, but its trigger is currently commented out.
     if (showDialog){
         AlertDialog(onDismissRequest = { showDialog = false },
             confirmButton = {
@@ -333,6 +360,10 @@ fun BottomNavigationBarM3() {
     }
 }
 
+/**
+ * Example composable for a small TopAppBar (Material 3).
+ * This seems to be an unused example or a placeholder.
+ */
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,7 +1,8 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.fittrackapp.data.model.WorkoutSession
 
 
 @Database(

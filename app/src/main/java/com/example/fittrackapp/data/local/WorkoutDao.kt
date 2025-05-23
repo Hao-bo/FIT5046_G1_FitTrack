@@ -1,12 +1,12 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.local
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.fittrackapp.data.model.WorkoutSession
 import kotlinx.coroutines.flow.Flow
 
 @Dao

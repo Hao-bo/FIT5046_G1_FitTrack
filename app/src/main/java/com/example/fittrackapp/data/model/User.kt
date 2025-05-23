@@ -1,4 +1,4 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.model
 
 data class User(
     val userId: String = "",

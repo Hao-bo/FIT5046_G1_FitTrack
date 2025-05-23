@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
@@ -7,24 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,11 +27,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.fittrackapp.R
+import com.example.fittrackapp.ui.workout.ExerciseViewModel
 
+/**
+ * Composable function for the Home Screen.
+ * This screen displays a list of exercise categories (e.g., Chest, Abs, Arms, Legs)
+ * as clickable cards, allowing users to navigate to detailed exercise information.
+ * It also provides a link to upload a new workout.
+ *
+ * @param navController The NavController used for navigation actions.
+ */
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun HomeScreen(navController: NavController){
-    val cardTitles = listOf("class 1", "class 2", "class 3", "class 4")
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
             Column {
                 Text(
@@ -54,11 +55,7 @@ fun HomeScreen(navController: NavController){
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "What's New",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.weight(1f)
-                    )
+
 
                     Text(
                         text = "Upload Workout",
@@ -70,10 +67,15 @@ fun HomeScreen(navController: NavController){
                     )
                 }
             }
+            // LazyColumn to display a list of exercise category cards.
+            // Using weight(1f) to make it take available vertical space.
+            // Padding at the bottom to avoid overlap with a bottom navigation bar (if any, e.g., 72.dp).
             LazyColumn(modifier = Modifier.fillMaxSize().weight(1f).padding(bottom = 72.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                // because only 4 cards here
                 items(1) {
+                    // Card for "Chest" exercises.
                     Card(modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -98,6 +100,7 @@ fun HomeScreen(navController: NavController){
                             }
                         }
                     }
+                    // Card for "Abs" exercises.
                     Card(modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -122,6 +125,7 @@ fun HomeScreen(navController: NavController){
                             }
                         }
                     }
+                    // Card for "Arms" exercises.
                     Card(modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -146,6 +150,7 @@ fun HomeScreen(navController: NavController){
                             }
                         }
                     }
+                    // Card for "Leg" exercises.
                     Card(modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)

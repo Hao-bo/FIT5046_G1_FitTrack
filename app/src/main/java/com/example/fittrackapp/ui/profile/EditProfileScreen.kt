@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,6 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+/**
+ * Composable function for the "Edit Profile" screen.
+ * Allows users to modify their profile information.
+ *
+ * @param navController The NavController used for navigation actions, specifically to go back.
+ */
 @Composable
 fun EditProfileScreen(navController: NavController) {
     var nickname by remember { mutableStateOf("") }

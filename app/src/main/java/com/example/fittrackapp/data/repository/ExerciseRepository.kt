@@ -1,7 +1,7 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.repository
 
-import com.example.fittrackapp.data.ApiClient
-import com.example.fittrackapp.data.ExerciseInfo
+import com.example.fittrackapp.data.remote.ApiClient
+import com.example.fittrackapp.data.model.ExerciseInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

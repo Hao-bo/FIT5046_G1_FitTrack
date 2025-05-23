@@ -1,5 +1,5 @@
 // ExerciseModels.kt
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.model
 
 import com.google.gson.annotations.SerializedName
 

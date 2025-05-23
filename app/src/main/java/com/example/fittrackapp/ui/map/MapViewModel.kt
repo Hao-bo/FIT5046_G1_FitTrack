@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.map
 
 import android.app.Application
 import android.util.Log
@@ -24,11 +24,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-
+/**
+ * ViewModel for the MapScreen.
+ * This ViewModel handles fetching nearby gym locations using Mapbox Discover API,
+ * managing user location, and generating navigation routes using Mapbox Navigation SDK.
+ *
+ * @param application The application context, required for AndroidViewModel.
+ */
 class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // Initialize Discover
-    private val discover: Discover = Discover.create()
+    private val discover: Discover = Discover.Companion.create()
     private val locationProvider: LocationProvider = LocationServiceFactory.getOrCreate()
         .getDeviceLocationProvider(null)
         .value ?: throw Exception("Failed to get device location provider")
@@ -67,10 +73,17 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val _isNavigationInitialized = MutableStateFlow(false)
 
 
+    /**
+     * Initialization block.
+     * Fetches the current user location when the ViewModel is created.
+     */
     init {
         getCurrentUserLocation()
     }
 
+    /**
+     * Fetches the last known location from the location provider and updates the _userLocation StateFlow.
+     */
     private fun getCurrentUserLocation() {
         locationProvider.getLastLocation { location ->
             if (location != null) {
@@ -79,8 +92,19 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Extension function to convert Mapbox common.location.Location to Mapbox geojson.Point.
+     * @return A Point object representing the location.
+     */
     fun Location.toPoint(): Point = Point.fromLngLat(this.longitude, this.latitude)
 
+    /**
+     * Searches for nearby gyms using the Mapbox Discover API.
+     * Uses the provided proximity point or the current user location.
+     * Updates _gymResults, _isLoading, and _errorMessage StateFlows.
+     *
+     * @param proximity The Point around which to search. Defaults to the current _userLocation.value.
+     */
     fun searchNearbyGyms(proximity: Point? = _userLocation.value) {
         if (proximity == null) {
             _errorMessage.value = "User location not available."
@@ -107,11 +131,21 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Sets the navigation initialization state to true.
+     * Called when the Mapbox Navigation SDK is confirmed to be ready.
+     */
     // Set navigation as initialize
     fun setNavigationInitialized() {
         _isNavigationInitialized.value = true
     }
 
+    /**
+     * Initiates navigation to a selected gym.
+     * Sets the selected gym, updates loading state, and requests a route.
+     *
+     * @param gymResult The DiscoverResult representing the gym to navigate to.
+     */
     // Select a gym and generate a navigation route
     fun navigateToGym(gymResult: DiscoverResult) {
 
@@ -128,6 +162,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         requestRoute(userPoint, gymResult)
     }
 
+    /**
+     * Requests navigation routes from the user's current location to the destination gym.
+     * Uses Mapbox Navigation SDK to fetch routes.
+     *
+     * @param userPoint The starting Point (user's location).
+     * @param gymResult The DiscoverResult representing the destination gym.
+     */
     private fun requestRoute(userPoint: Point, gymResult: DiscoverResult) {
         // Check navigation instance again
         val navigationInstance = MapboxNavigationProvider.retrieve()
@@ -138,6 +179,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
 
+        // Build route options for the directions request.
         // Constructing a directions request
         val routeOptions = RouteOptions.builder()
             .applyDefaultNavigationOptions()
@@ -179,6 +221,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    /**
+     * Clears the current navigation state.
+     * Resets navigation routes, selected gym, and navigation status.
+     */
     // Clear navigation state
     fun clearNavigation() {
         _navigationRoutes.value = emptyList()
@@ -186,10 +232,16 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _isNavigating.value = false
     }
 
+    /**
+     * Clears the current error message.
+     */
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
 
+    /**
+     * Clears the current gym search results.
+     */
     fun clearSearchResults() {
         _gymResults.value = emptyList()
     }

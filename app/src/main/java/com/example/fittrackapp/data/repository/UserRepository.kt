@@ -1,6 +1,7 @@
-package com.example.fittrackapp.data
+package com.example.fittrackapp.data.repository
 
 import android.util.Log
+import com.example.fittrackapp.data.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers

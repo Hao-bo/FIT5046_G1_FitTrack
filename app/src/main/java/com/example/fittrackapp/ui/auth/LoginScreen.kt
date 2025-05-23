@@ -1,4 +1,4 @@
-package com.example.fittrackapp
+package com.example.fittrackapp.ui.auth
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -52,9 +52,20 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.fittrackapp.ui.auth.AuthViewModel
+import com.example.fittrackapp.R
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
+
+/**
+ * Composable function for the Welcome/Login Screen.
+ * This screen allows users to sign in or sign up using email/password or Google Sign-In.
+ * It includes form validation and displays loading states and error messages.
+ *
+ * @param navController The NavController for navigation actions.
+ * @param authViewModel The ViewModel responsible for authentication logic.
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun WelcomeScreen(
@@ -87,6 +98,11 @@ fun WelcomeScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    /**
+     * Checks if the given email string is in a valid format.
+     * @param email The email string to validate.
+     * @return True if the email is valid, false otherwise.
+     */
     fun isValidEmail(email: String): Boolean {
         val emailPattern = Pattern.compile(
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
@@ -94,7 +110,11 @@ fun WelcomeScreen(
         return emailPattern.matcher(email).matches()
     }
 
-    // 实时验证Email
+    /**
+     * Validates the password input field.
+     * @param pwd The password string to validate.
+     * @return An error message string if validation fails, null otherwise.
+     */
     fun validateEmail(email: String): String? {
         return when {
             email.trim().isEmpty() -> "Email address cannot be empty"
@@ -106,7 +126,11 @@ fun WelcomeScreen(
         }
     }
 
-
+    /**
+     * Validates the entire form (email and password).
+     * Sets error states and shows a Snackbar with a summary error if validation fails.
+     * @return True if the form is valid, false otherwise.
+     */
     fun validatePassword(pwd: String): String? {
         return when {
             pwd.trim().isEmpty() -> "Password cannot be empty"
@@ -117,6 +141,11 @@ fun WelcomeScreen(
         }
     }
 
+    /**
+     * Validates the entire form (email and password).
+     * Sets error states and shows a Snackbar with a summary error if validation fails.
+     * @return True if the form is valid, false otherwise.
+     */
     fun validateForm(): Boolean {
         hasEmailBeenTouched = true
         hasPasswordBeenTouched = true
@@ -145,6 +174,11 @@ fun WelcomeScreen(
         return isValid
     }
 
+    /**
+     * Validates the entire form (email and password).
+     * Sets error states and shows a Snackbar with a summary error if validation fails.
+     * @return True if the form is valid, false otherwise.
+     */
     // Go to home page
     LaunchedEffect(isSignInSuccessful) {
         if (isSignInSuccessful) {
@@ -155,6 +189,7 @@ fun WelcomeScreen(
         }
     }
 
+    // LaunchedEffect to display error messages from AuthViewModel in a Snackbar.
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -279,6 +314,7 @@ fun WelcomeScreen(
                 }
             }
 
+            // Overlay for loading indicator.
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize()
