@@ -49,3 +49,37 @@ The default development branch is `develop`.
 ```bash
 git clone https://github.com/Hao-bo/FIT5046_G1_FitTrack
 git checkout develop
+
+2. Firebase Setup
+This project uses Firebase for authentication.
+
+Go to the Firebase Console and create a new project or use an existing one.
+Add an Android app to your Firebase project with the package name com.example.fittrackapp (or your actual package name).
+Download the google-services.json file provided by Firebase and place it in the app/ directory of your Android project.
+Important for Google Sign-In:
+You MUST add the SHA-1 fingerprint of your signing certificate(s) (both debug and release) to your Firebase project settings.
+To get your debug SHA-1 key, you can typically use the command:
+Bash
+
+./gradlew signingReport
+Or find it via Android Studio: Gradle tab -> app -> Tasks -> android -> signingReport.
+Add this SHA-1 key in the Firebase console: Project settings -> Your apps -> Android app -> Add fingerprint.
+3. Mapbox Setup
+The application uses Mapbox for map functionalities.
+
+You will likely need a Mapbox public access token.
+This token is usually configured in the AndroidManifest.xml file or programmatically within the application. Example:
+
+<meta-data android:name="MAPBOX_ACCESS_TOKEN"
+           android:value="YOUR_MAPBOX_ACCESS_TOKEN" />
+Replace YOUR_MAPBOX_ACCESS_TOKEN with your actual token.
+4. Wger API (for Exercise Data)
+The application might use the Wger Workout Manager API for fetching exercise information (inferred from WgerApi.kt and ExerciseRepository.kt).
+
+If this API requires an API key or specific configuration, ensure it is correctly set up within the ApiClient.kt or related network configuration files.
+How to Build and Run
+Ensure all setup steps above (especially Firebase and any necessary API keys) are completed.
+Open the project in Android Studio.
+Let Gradle sync and download all dependencies.
+Select a target device or emulator.
+Run the application (usually Shift+F10 or the "Run" button).
