@@ -1,5 +1,7 @@
 package com.example.fittrackapp
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fittrackapp.data.WorkoutRepository
@@ -11,13 +13,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import java.util.Calendar
 import java.util.TimeZone
 
 class FormViewModel(
     private val workoutRepository: WorkoutRepository = Graph.workoutRepository,
-    private val authViewModel: AuthViewModel,
+    authViewModel: AuthViewModel,
 ) : ViewModel() {
 
     // Observe current user ID
@@ -27,11 +30,10 @@ class FormViewModel(
     private val _selectedDateMillis = MutableStateFlow<Long?>(null)
     private val _selectedYearMonth = MutableStateFlow<Pair<Int, Int>?>(null)
 
-
     // when _selectedDateMillis update，automatically query the exercise data of the corresponding date
     @OptIn(ExperimentalCoroutinesApi::class)
     val workoutsForSelectedDate: StateFlow<List<WorkoutSession>> =
-        currentUserId.flatMapLatest { userId ->
+        authViewModel.currentUserId.flatMapLatest { userId ->
             if (userId == null) {
                 flowOf(emptyList())
             } else {
@@ -40,11 +42,23 @@ class FormViewModel(
                         flowOf(emptyList()) // return emptyList if doesn't select _selectedDateMillis
                     } else {
                         val (dayStart, dayEnd) = calculateDayTimestamps(millis)
+                        Log.d(TAG, "workoutsForSelectedDate - querying database for userId: $userId, dayStart: $dayStart, dayEnd: $dayEnd")
                         workoutRepository.getWorkoutsByDate(userId, dayStart, dayEnd)
+                            .onEach { workoutList ->
+                                Log.d(TAG, "workoutsForSelectedDate - workoutList: $workoutList")
+                                workoutList.forEach { workout ->
+                                    Log.d(TAG, "workoutsForSelectedDate - workout: id = $workout.id, activityType = ${workout.activityType}")
+                                }
+                            }
                     }
                 }
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly, // 改为 Eagerly 确保立即开始
+            initialValue = emptyList()
+//            viewModelScope, SharingStarted.WhileSubscribed(), emptyList()
+        )
 
     fun clearSelectedDate() {
         _selectedDateMillis.value = null
@@ -52,7 +66,7 @@ class FormViewModel(
     }
 
     val workoutsForSelectedMonth: StateFlow<List<WorkoutSession>> =
-        currentUserId.flatMapLatest { userId ->
+        authViewModel.currentUserId.flatMapLatest { userId ->
             if (userId == null) {
                 flowOf(emptyList())
             } else {
@@ -66,7 +80,12 @@ class FormViewModel(
                     }
                 }
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly, // 改为 Eagerly 确保立即开始
+            initialValue = emptyList()
+//            viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
+        )
 
     fun resetData() {
         // 重置选定的日期和月份

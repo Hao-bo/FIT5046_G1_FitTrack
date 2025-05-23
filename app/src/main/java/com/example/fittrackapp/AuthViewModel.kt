@@ -11,6 +11,7 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fittrackapp.data.User
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -22,14 +23,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.flow.collectLatest
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     internal val auth: FirebaseAuth = Firebase.auth
     private val credentialManager: CredentialManager = CredentialManager.create(getApplication())
 
-    private val _currentUserId = MutableStateFlow<String?>(auth.currentUser?.uid)
-    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+    private var _currentUserId = MutableStateFlow<String?>(auth.currentUser?.uid)
+    var currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
 
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
@@ -44,6 +47,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     // This will be true upon successful sign-in.
     private val _isSignInSuccessful = MutableStateFlow(false)
     val isSignInSuccessful: StateFlow<Boolean> = _isSignInSuccessful.asStateFlow()
+
+    private val _userProfile = MutableStateFlow<User?>(null)
+    val userProfile: StateFlow<User?> = _userProfile.asStateFlow()
 
 
 
@@ -60,11 +66,98 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 _username.value = user.displayName
             }
+            loadUserProfile(user.uid)
+        }
+        // Monitor changes in user data in the user repository
+        viewModelScope.launch {
+            Graph.userRepository.currentUser.collectLatest { user ->
+                _userProfile.value = user
+            }
         }
     }
 
     private fun updateCurrentUserId() {
+        Log.d(TAG,"update function UserID: ${auth.currentUser?.uid}")
         _currentUserId.value = auth.currentUser?.uid
+        Log.d(TAG,"update function UserID: ${_currentUserId.value}")
+        currentUserId = _currentUserId.asStateFlow()
+        Log.d(TAG,"update function UserID: ${currentUserId.value}")
+    }
+
+    /**
+     * Load the user profile, or create a new one if it doesn't exist
+     */
+    private fun loadUserProfile(userId: String) {
+        viewModelScope.launch {
+            val result = Graph.userRepository.getUserById(userId)
+            result.fold(
+                onSuccess = { user ->
+                    if (user == null) {
+                        // The user does not exist, create a new user
+                        createUserInFirestore(auth.currentUser)
+                    } else {
+                        _userProfile.value = user
+                        // Update last login time
+                        Graph.userRepository.updateUserFields(userId, mapOf("lastLoginAt" to System.currentTimeMillis()))
+                    }
+                },
+                onFailure = { e ->
+                    Log.e(TAG, "Error loading user profile", e)
+                    _errorMessage.value = "Failed to load user profile: ${e.message}"
+                }
+            )
+        }
+    }
+
+    /**
+     * Create a new user in Firestore
+     */
+    private fun createUserInFirestore(firebaseUser: FirebaseUser?) {
+        firebaseUser?.let { user ->
+            val newUser = User(
+                userId = user.uid,
+                email = user.email,
+                displayName = user.displayName ?: user.email?.substringBefore("@")?.take(5),
+                photoUrl = user.photoUrl?.toString(),
+                createdAt = System.currentTimeMillis(),
+                lastLoginAt = System.currentTimeMillis()
+            )
+
+            viewModelScope.launch {
+                val result = Graph.userRepository.createOrUpdateUser(newUser)
+                result.fold(
+                    onSuccess = { createdUser ->
+                        Log.d(TAG, "User created in Firestore: ${createdUser.userId}")
+                    },
+                    onFailure = { e ->
+                        Log.e(TAG, "Error creating user in Firestore", e)
+                        _errorMessage.value = "Failed to create user profile: ${e.message}"
+                    }
+                )
+            }
+        }
+    }
+
+    /**
+     * Update User Profile
+     */
+    fun updateUserProfile(fields: Map<String, Any>) {
+        val userId = _currentUserId.value ?: return
+
+        viewModelScope.launch {
+            val result = Graph.userRepository.updateUserFields(userId, fields)
+            result.fold(
+                onSuccess = { success ->
+                    if (success) {
+                        Log.d(TAG, "User profile updated successfully")
+                    }
+                },
+                onFailure = { e ->
+                    Log.e(TAG, "Error updating user profile", e)
+                    _errorMessage.value = "Failed to update profile: ${e.message}"
+                }
+            )
+        }
     }
 
     fun createGoogleSignInRequest(): GetCredentialRequest {
@@ -138,6 +231,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun signOut() {
+        Log.d(TAG, "UserID: ${auth.currentUser?.uid}")
+        _userProfile.value = null
         auth.signOut()
         // When a user signs out, clear the current user credential state from all credential providers.
         viewModelScope.launch {
@@ -155,7 +250,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _errorMessage.value = null
 
             Graph.formViewModel.clearSelectedDate()
-
+            Log.d(TAG, "UserID: ${auth.currentUser?.uid}")
         }
     }
 
@@ -171,6 +266,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     _username.value = email.substringBefore("@").take(5)
                     _isSignInSuccessful.value = true
                     updateCurrentUserId()
+
+                    // load User profile
+                    auth.currentUser?.let { user ->
+                        loadUserProfile(user.uid)
+                    }
                 } else {
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
                     _errorMessage.value = "Authentication failed: ${task.exception?.message}"
@@ -191,6 +291,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     _username.value = email.substringBefore("@").take(5)
                     _isSignInSuccessful.value = true
                     updateCurrentUserId()
+                    // load User profile
+                    auth.currentUser?.let { user ->
+                        loadUserProfile(user.uid)
+                    }
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)

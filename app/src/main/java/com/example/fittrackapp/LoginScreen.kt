@@ -53,6 +53,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -68,6 +69,8 @@ fun WelcomeScreen(
     // Form Validation
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var hasEmailBeenTouched by remember { mutableStateOf(false) }
+    var hasPasswordBeenTouched by remember { mutableStateOf(false) }
 
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
@@ -84,35 +87,58 @@ fun WelcomeScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    fun isValidEmail(email: String): Boolean {
+        val emailPattern = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        )
+        return emailPattern.matcher(email).matches()
+    }
+
+    // 实时验证Email
+    fun validateEmail(email: String): String? {
+        return when {
+            email.trim().isEmpty() -> "Email address cannot be empty"
+            email.trim().length < 3 -> "Email address is too short"
+            !email.contains("@") -> "The email address must contain the @ symbol"
+            !isValidEmail(email.trim()) -> "Please enter the correct email format，such as: example@gmail.com"
+            email.trim().startsWith("@") || email.trim().endsWith("@") -> "The email format is incorrect"
+            else -> null
+        }
+    }
+
+
+    fun validatePassword(pwd: String): String? {
+        return when {
+            pwd.trim().isEmpty() -> "Password cannot be empty"
+            pwd.length < 6 -> "Password length must be at least 6 characters"
+            pwd.length > 50 -> "The password length cannot exceed 50 characters"
+            pwd.contains(" ") -> "The password cannot contain spaces"
+            else -> null
+        }
+    }
+
     fun validateForm(): Boolean {
-        var isValid = true
+        hasEmailBeenTouched = true
+        hasPasswordBeenTouched = true
 
-        // validate email
-        if (emailValue.trim().isEmpty()) {
-            emailError = "Email address cannot be null"
-            isValid = false
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailValue.trim()).matches()) {
-            emailError = "Please enter a valid email address"
-            isValid = false
-        } else {
-            emailError = null
-        }
+        val emailValidationResult = validateEmail(emailValue)
+        val passwordValidationResult = validatePassword(password)
 
-        // validate password
-        if (password.trim().isEmpty()) {
-            passwordError = "password can not be null"
-            isValid = false
-        } else if (password.length < 6) {
-            passwordError = "password digits at least 6"
-            isValid = false
-        } else {
-            passwordError = null
-        }
+        emailError = emailValidationResult
+        passwordError = passwordValidationResult
 
-        // validate fail
+        val isValid = emailValidationResult == null && passwordValidationResult == null
+
         if (!isValid) {
             scope.launch {
-                snackbarHostState.showSnackbar("Please fill in all required fields correctly")
+                val errorMsg = when {
+                    emailValidationResult != null && passwordValidationResult != null ->
+                        "Please check your email address and password format"
+                    emailValidationResult != null -> "Please check the email format"
+                    passwordValidationResult != null -> "Please check the password format"
+                    else -> "Please fill in the correct information"
+                }
+                snackbarHostState.showSnackbar(errorMsg)
             }
         }
 
@@ -155,7 +181,7 @@ fun WelcomeScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
                         text = "Welcome to Fit Track", fontSize = 30.sp,
-                        color = androidx.compose.ui.graphics.Color.Black,
+                        color = Color.Black,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(64.dp))
@@ -248,13 +274,6 @@ fun WelcomeScreen(
                         enabled = !isLoading
                     ) {
                         Text("Sign In / Sign Up with Google")
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {},
-                        modifier = Modifier.width(280.dp),
-                    ) {
-                        Text("Forget password")
                     }
 
                 }

@@ -69,6 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import android.Manifest
+import androidx.compose.material.Surface
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
@@ -93,8 +94,8 @@ class MainActivity : ComponentActivity(), PermissionsListener {
         if (PermissionsManager.areLocationPermissionsGranted(this)) { //
             // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
         } else {
-            permissionsManager = PermissionsManager(this) //
-            permissionsManager.requestLocationPermissions(this) //
+            permissionsManager = PermissionsManager(this)
+            permissionsManager.requestLocationPermissions(this)
         }
 
         enableEdgeToEdge()
@@ -181,35 +182,39 @@ fun BottomNavigationBarM3() {
     Scaffold(
         topBar = {
             if (currentRoute != "login" && currentRoute != "profile" && currentRoute != "add_workout"){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .systemBarsPadding()
-                        .height(46.dp)
-                        .padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                            .clickable {
-                                navController.navigate("profile") {
-                                }
-                            },
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .systemBarsPadding()
+                            .height(46.dp)
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "User",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable {
+                                    navController.navigate("profile") {
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "User",
+                                color = MaterialTheme.colorScheme.onPrimary,
+//                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
 
 //                    if (currentRoute == "home"){
 //                        Icon(
@@ -222,6 +227,7 @@ fun BottomNavigationBarM3() {
 //                        )
 //                    }
 
+                    }
                 }
             }
         },
