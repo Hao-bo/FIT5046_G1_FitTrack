@@ -42,38 +42,48 @@ class FitTrackApplication : Application() {
 
     }
 
-    // This is the first version of scheduleDailyReminder, which is commented out.
-    // It was intended to schedule a daily reminder at a specific time (e.g., 8 PM or 9:50 PM).
-//    private fun scheduleDailyReminder() {
-//        val workManager = WorkManager.getInstance(applicationContext)
-//
-//        // Calculate initial delay to 8 PM
-//        val currentTime = Calendar.getInstance()
-//        val dueTime = Calendar.getInstance().apply {
-//            set(Calendar.HOUR_OF_DAY, 21) // 8 PM
-//            set(Calendar.MINUTE,50)
-//            set(Calendar.SECOND, 0)
-//        }
-//
-//        if (dueTime.before(currentTime)) {
-//            dueTime.add(Calendar.HOUR_OF_DAY, 24) // If it's past 8 PM, schedule for tomorrow
-//        }
-//
-//        val initialDelay = dueTime.timeInMillis - currentTime.timeInMillis
-//
-//        val dailyReminderRequest =
-//            PeriodicWorkRequestBuilder<ReminderWorker>(24, TimeUnit.HOURS)
-//                .setInitialDelay(0, TimeUnit.MILLISECONDS)
-//                .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-//                .addTag("daily_reminder_tag") // Optional: add a tag to identify the work
-//                .build()
-//
-//        workManager.enqueueUniquePeriodicWork(
-//            "FitTrackDailyReminder", // A unique name for the work
-//            ExistingPeriodicWorkPolicy.KEEP, // Or REPLACE if you want to update the worker
-//            dailyReminderRequest
-//        )
-//    }
+    /**
+     * Schedules a daily reminder using WorkManager to trigger at a specific time (e.g., 9:50 PM).
+     * This function calculates the initial delay to the next occurrence of 9:50 PM
+     * and then sets up a periodic worker to run every 24 hours.
+     */
+    private fun scheduleDailyReminder() {
+        val workManager = WorkManager.getInstance(applicationContext)
+
+        // Calculate initial delay to
+        val currentTime = Calendar.getInstance()
+
+        // Define the target time for the daily reminder
+        val dueTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 20)
+            set(Calendar.MINUTE,45)
+            set(Calendar.SECOND, 0)
+        }
+
+        // Check if the calculated due time has already passed for today.
+        // If it has, add 24 hours to schedule it for the next day.
+        if (dueTime.before(currentTime)) {
+            dueTime.add(Calendar.HOUR_OF_DAY, 24)
+        }
+
+        // Calculate the initial delay in milliseconds until the first reminder should trigger.
+        // This is the difference between the target due time and the current time.
+        val initialDelay = dueTime.timeInMillis - currentTime.timeInMillis
+
+        // Build a periodic work request for the ReminderWorker.
+        // This request will repeat every 24 hours.
+        val dailyReminderRequest =
+            PeriodicWorkRequestBuilder<ReminderWorker>(24, TimeUnit.HOURS)
+                .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+                .addTag("daily_reminder_tag") // Optional: add a tag to identify the work
+                .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "FitTrackDailyReminder", // A unique name for the work
+            ExistingPeriodicWorkPolicy.KEEP, // Or REPLACE if you want to update the worker
+            dailyReminderRequest
+        )
+    }
 
 
     /**
@@ -81,22 +91,22 @@ class FitTrackApplication : Application() {
      * This current implementation schedules a test reminder that triggers every 15 minutes.
      * The original implementation for a daily reminder at a specific time is commented out above.
      */
-    private fun scheduleDailyReminder() {
-        val workManager = WorkManager.getInstance(applicationContext)
-
-        // Create a periodic work request for the ReminderWorker.
-        // This request is configured to repeat every 15 minutes for testing purposes.
-        val testReminderRequest =
-            PeriodicWorkRequestBuilder<ReminderWorker>(15, TimeUnit.MINUTES)
-                .setInitialDelay(0, TimeUnit.MILLISECONDS) // 立即开始
-                .addTag("test_reminder_tag")
-                .build()
-
-        workManager.enqueueUniquePeriodicWork(
-            "FitTrackTestReminder",
-            ExistingPeriodicWorkPolicy.REPLACE, // Replace any existing test
-            testReminderRequest
-        )
-    }
+//    private fun scheduleDailyReminder() {
+//        val workManager = WorkManager.getInstance(applicationContext)
+//
+//        // Create a periodic work request for the ReminderWorker.
+//        // This request is configured to repeat every 15 minutes for testing purposes.
+//        val testReminderRequest =
+//            PeriodicWorkRequestBuilder<ReminderWorker>(15, TimeUnit.MINUTES)
+//                .setInitialDelay(0, TimeUnit.MILLISECONDS) // 立即开始
+//                .addTag("test_reminder_tag")
+//                .build()
+//
+//        workManager.enqueueUniquePeriodicWork(
+//            "FitTrackTestReminder",
+//            ExistingPeriodicWorkPolicy.REPLACE, // Replace any existing test
+//            testReminderRequest
+//        )
+//    }
 }
 

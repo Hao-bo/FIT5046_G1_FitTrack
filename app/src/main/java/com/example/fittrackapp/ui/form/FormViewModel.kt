@@ -92,6 +92,7 @@ class FormViewModel(
      * It observes changes in both `currentUserId` and `_selectedYearMonth`.
      * If either is null, it emits an empty list. Otherwise, it queries the repository.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val workoutsForSelectedMonth: StateFlow<List<WorkoutSession>> =
         authViewModel.currentUserId.flatMapLatest { userId ->
             if (userId == null) {
